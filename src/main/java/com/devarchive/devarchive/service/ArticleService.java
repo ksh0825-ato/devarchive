@@ -1,5 +1,7 @@
 package com.devarchive.devarchive.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -53,5 +55,35 @@ public class ArticleService {
         articleRepository.save(article);
     }
 
+    // 상세 조회 로직
+    @Transactional(readOnly = true)
+    public Article findById(Long articleId) {
+        return articleRepository.findById(articleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글을 찾을 수 없습니다. id=" + articleId));
+    }
+
+    @Transactional
+    public void update(Long articleId, ArticleDto articleDto) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 없습니다."));
+        
+        // 이 시점에 article은 영속 상태입니다. 필드 값만 바꿔주면 끝!
+        article.setTitle(articleDto.getTitle());
+        article.setContent(articleDto.getContent());
+        article.setUpdatedAt(LocalDateTime.now());
+        // 만약 JobPost도 변경 가능하다면 여기서 setJobPost()도 호출하세요.
+    }
+
+
+    @Transactional(readOnly = true)
+    public long getArticleCount(String username) {
+        return articleRepository.countByAccount_Username(username);
+    }
+
+    @Transactional(readOnly = true)
+    public long getUniqueJobCount(String username) {
+        // 유저가 작성한 학습 기록 중, 연결된 공고(JobPost)가 있는 유니크한 공고 개수
+        return articleRepository.countDistinctJobByAccount_Username(username);
+    }
     
 }

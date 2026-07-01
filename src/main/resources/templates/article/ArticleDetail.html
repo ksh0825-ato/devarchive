@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>학습 기록 상세</title>
+</head>
+
+<body>
+    <!-- 게시글 제목 -->
+    <h1 th:text="${article.title}">학습 기록 제목</h1>
+    
+    <!-- 관련 채용 공고 정보 (공고명 클릭 시 해당 공고 상세로 이동하면 더 좋습니다) -->
+    <p><strong>연관 채용 공고:</strong> 
+        <span th:if="${article.jobPost != null}" 
+              th:text="${article.jobPost.companyName} + ' (' + ${article.jobPost.position} + ')'">
+        </span>
+        <span th:unless="${article.jobPost != null}">연관된 공고 없음</span>
+    </p>
+    
+    <p><strong>작성일:</strong> <span th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+    
+    <hr>
+    
+    <p><strong>본문:</strong></p>
+    <!-- 본문 내용은 엔터키가 적용되도록 스타일 처리 추천 -->
+    <p th:text="${article.content}" style="white-space: pre-wrap;"></p>
+
+    <div style="margin-top: 20px;">
+        <!-- 수정 버튼 -->
+        <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}">수정하기</a>
+        
+        <!-- 삭제 버튼 -->
+        <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
+           onclick="return confirm('정말 삭제하시겠습니까?');">삭제하기</a>
+    </div>
+
+    <br>
+    <a th:href="@{/article/ArticleList}">목록으로 돌아가기</a>
+</body>
+</html>

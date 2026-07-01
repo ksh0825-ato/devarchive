@@ -2,51 +2,71 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>학습 기록 리스트</title>
+    <title>내 학습 기록 목록</title>
+    <style>
+        .search-area { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+    </style>
 </head>
 <body>
 
-<!-- 상단 제목 변경 -->
-<h1 th:text="${username} + '님의 학습 기록'">님의 학습 기록</h1>
+    <!-- 통계 박스 -->
+    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
+        <h3 style="margin-top: 0;">학습 통계</h3>
+        <p>
+            총 학습 기록: <strong th:text="${articleCount != null ? articleCount : '값없음'}">0</strong> 건 | 
+            분석 중인 공고: <strong th:text="${jobCount != null ? jobCount : '값없음'}">0</strong> 개
+        </p>
+    </div>
 
-<form th:action="@{/article/ArticleList}" method="post">
-    <input type="text" name="keyword" th:value="${keyword}" placeholder="글 제목 검색">
-    <button type="submit">검색</button>
-    <a th:href="@{/article/ArticleList}">초기화</a>
-</form>
+    <h1>내 학습 기록</h1>
 
-<!-- 기존 테이블 동일 사용 -->
-<table border="1" th:if="${articlePage != null and articlePage.totalElements > 0}">
+    <!-- 검색창 -->
+    <div class="search-area">
+        <form th:action="@{/article/ArticleList}" method="post">
+            <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력">
+            <button type="submit">검색</button>
+            <a th:href="@{/article/ArticleList}">초기화</a>
+        </form>
+    </div>
+
+    <!-- 목록 테이블 -->
+    <table>
         <thead>
             <tr>
                 <th>번호</th>
                 <th>제목</th>
                 <th>관련 공고</th>
-                <th>등록일</th>
-                <th>조회수</th>
-                <th>상세보기</th>
+                <th>작성일</th>
+                <th>관리</th>
             </tr>
         </thead>
         <tbody>
-            <!-- articlePage.content를 반복 -->
             <tr th:each="article : ${articlePage.content}">
-                <td th:text="${article.articleId}"></td>
-                <td th:text="${article.title}"></td>
-                <!-- 연결된 공고가 있다면 회사명 표시 -->
-                <td th:text="${article.jobPost != null ? article.jobPost.companyName : '없음'}"></td>
-                <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}"></td>
-                <td th:text="${article.viewCount}"></td>
-                <td><a th:href="@{/article/ArticleDetail(articleId=${article.articleId})}">보기</a></td>
+                <td th:text="${article.articleId}">1</td>
+                <td>
+                    <a th:href="@{/article/ArticleDetail(articleId=${article.articleId})}" 
+                       th:text="${article.title}">학습 기록 제목</a>
+                </td>
+                <td>
+                    <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
+                    <span th:unless="${article.jobPost != null}">-</span>
+                </td>
+                <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>
+                <td>
+                    <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}">수정</a>
+                    <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
+                       onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                </td>
             </tr>
         </tbody>
     </table>
 
-    <!-- 데이터가 없을 때 메시지 변경 -->
-    <p th:if="${articlePage == null or articlePage.totalElements == 0}">아직 작성하신 학습 기록이 없습니다. 첫 학습글을 작성해보세요!</p>
-
-    <br>
-    <a th:href="@{/article/ArticleRegister}">학습글 작성하기</a>
-    <a th:href="@{/login/main}">메인으로 돌아가기</a>
+    <div style="margin-top: 20px;">
+        <a th:href="@{/article/ArticleRegister}">글쓰기</a>
+    </div>
 
 </body>
 </html>
