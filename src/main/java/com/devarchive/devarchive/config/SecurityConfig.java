@@ -18,7 +18,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .authorizeHttpRequests(auth -> auth
                 // 목록 조회나 상세 조회는 로그인한 사람이라면 누구나 볼 수 있게 허용
                 // 로그인 페이지와 메인 진입 페이지는 모두 접근 가능해야 함
-                    .requestMatchers("/account/login", "/login/main", "/css/**", "/js/**").permitAll() 
+                    .requestMatchers("/account/register", "/account/login", "/login/main", "/css/**", "/js/**").permitAll() 
                     
                     // 기존 설정들
                     .requestMatchers("/job/JobPostList", "/job/JobPostDetail").permitAll() 

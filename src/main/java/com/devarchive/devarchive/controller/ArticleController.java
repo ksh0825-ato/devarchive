@@ -1,6 +1,8 @@
 package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,11 +12,13 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.devarchive.devarchive.domain.Article;
+import com.devarchive.devarchive.domain.Tag;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.ArticleRepository;
 import com.devarchive.devarchive.service.ArticleService;
@@ -39,19 +43,20 @@ public class ArticleController {
     }
 
     @PostMapping("/ArticleRegister")
-    public String registerArticle(@ModelAttribute ArticleDto articleDto,
-                                 Principal principal,
-                                 @RequestParam(value = "jobId", required = false) Long jobId) { // 파라미터 추가
-        try {
-                // 기존 저장 로직
-                String username = principal.getName();
-                articleService.saveArticle(articleDto, username, jobId);
-                return "redirect:/article/ArticleList";
-            } catch (Exception e) {
-                // 여기가 핵심입니다. 어떤 에러인지 콘솔에 직접 출력!
-                e.printStackTrace(); 
-                return "error"; // 에러 페이지로 이동
-        }
+    public String register(@ModelAttribute ArticleDto articleDto, 
+                        @RequestParam("tagNames") String tagNames, // 폼에서 받아올 태그 문자열
+                        @RequestParam(value = "jobId", required = false) Long jobId,
+                        Principal principal) {
+        
+        String username = principal.getName();
+        
+        // 1. 게시글 및 공고 연동 저장
+        Article savedArticle = articleService.saveArticle(articleDto, username, jobId);
+        
+        // 2. 태그 저장
+        articleService.saveTagsForArticle(savedArticle, tagNames);
+        
+        return "redirect:/article/ArticleList";
     }
 
     @GetMapping("/ArticleList")
@@ -72,17 +77,6 @@ public class ArticleController {
 
         return "article/ArticleList";
     }   
-
-    // 태그 추가
-    @PostMapping("/ArticleRegister")
-    public String register(@ModelAttribute Article article, 
-                        @RequestParam("tagNames") String tagNames, 
-                        Principal principal) {
-        // ... 유저 정보 설정 로직 ...
-        articleService.saveArticleWithTags(article, tagNames);
-        return "redirect:/article/ArticleList";
-    }
-
 
     @PostMapping("/ArticleList")
         public String searchMyArticles(Principal principal, Model model,
@@ -118,27 +112,39 @@ public class ArticleController {
         }
 
     // Article 상세 조회
-    @GetMapping("/ArticleDetail")
-    public String articleDetail(@RequestParam("articleId") Long articleId, Model model) {
-        Article article = articleService.findById(articleId); // 혹은 articleService.getArticle(articleId)
+    @GetMapping("/ArticleDetail/{articleId}")
+    public String articleDetail(@PathVariable("articleId") Long articleId, Model model) {
+        Article article = articleService.findById(articleId); 
+        List<Tag> tags = articleService.getTagsByArticle(article);
+
         model.addAttribute("article", article);
+        model.addAttribute("tags", tags); 
         return "article/ArticleDetail";
     }
 
-    // 1. 수정 페이지로 이동
     @GetMapping("/ArticleUpdate")
     public String updateForm(@RequestParam("articleId") Long articleId, Model model) {
         Article article = articleService.findById(articleId);
+        List<Tag> tags = articleService.getTagsByArticle(article);
+        
         model.addAttribute("article", article);
-        return "article/ArticleUpdate"; // 수정할 폼이 있는 HTML
+        
+        // 태그를 콤마로 구분된 문자열로 변환하여 입력창에 기본값으로 세팅
+        String tagNames = tags.stream()
+                            .map(Tag::getTagName)
+                            .collect(Collectors.joining(", "));
+        model.addAttribute("tagNames", tagNames);
+        
+        return "article/ArticleUpdate";
     }
 
     // 2. 실제 데이터 업데이트 (POST)
     @PostMapping("/ArticleUpdate")
     public String updateArticle(@RequestParam("articleId") Long articleId, 
-                                @ModelAttribute ArticleDto articleDto) {
-        articleService.update(articleId, articleDto);
-        return "redirect:/article/ArticleDetail?articleId=" + articleId; // 상세 페이지로 복귀
+                                @ModelAttribute ArticleDto articleDto,
+                                @RequestParam(value = "tagNames", required = false) String tagNames) {
+        articleService.updateArticle(articleId, articleDto, tagNames);
+        return "redirect:/article/ArticleDetail/" + articleId;
     }
 
 
@@ -147,6 +153,17 @@ public class ArticleController {
       public String delete(@RequestParam("articleId") Long articleId) {
         articleRepository.deleteById(articleId);
         return "redirect:/article/ArticleList"; // 삭제 후 목록으로 이동
+    }
+
+    @GetMapping("/searchByTag")
+    public String searchByTag(@RequestParam("tagName") String tagName, Model model) {
+        List<Article> articles = articleService.getArticlesByTag(tagName);
+        
+        model.addAttribute("articles", articles);
+        model.addAttribute("currentTag", tagName);
+        
+        // 기존에 글 목록을 보여주던 화면(ArticleList.html)을 재사용합니다
+        return "article/ArticleList"; 
     }
     
 

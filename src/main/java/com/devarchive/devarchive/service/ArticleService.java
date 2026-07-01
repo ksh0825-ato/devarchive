@@ -1,6 +1,8 @@
 package com.devarchive.devarchive.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,25 +42,22 @@ public class ArticleService {
     }
 
     @Transactional
-    public void saveArticle(ArticleDto dto, String username, Long jobId) {
-        // 1. 유저 조회
+    public Article saveArticle(ArticleDto articleDto, String username, Long jobId) {
+        // 1. username으로 Account 조회
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        // 2. Article 엔티티 생성 (아까 추가한 기본 생성자 사용)
-        Article article = new Article();
-        article.setTitle(dto.getTitle());
-        article.setContent(dto.getContent());
-        article.setAccount(account); // 유저 매핑
+        // 2. Article 엔티티 생성 및 정보 세팅
+        Article article = articleDto.toEntity();
+        article.setAccount(account); // 유저 정보 연결 (가장 중요!)
         
-        // 3. 공고 매핑 (있을 경우)
+        // 3. jobId가 있다면 연결 (JobPost 조회 필요)
         if (jobId != null) {
             JobPost jobPost = jobPostRepository.findById(jobId).orElse(null);
             article.setJobPost(jobPost);
         }
         
-        // 4. 저장
-        articleRepository.save(article);
+        return articleRepository.save(article);
     }
 
     // 상세 조회 로직
@@ -80,6 +79,21 @@ public class ArticleService {
         // 만약 JobPost도 변경 가능하다면 여기서 setJobPost()도 호출하세요.
     }
 
+    // 태그 업데이트 로직
+    @Transactional
+    public void updateArticle(Long articleId, ArticleDto articleDto, String tagNames) {
+        Article article = articleRepository.findById(articleId).orElseThrow();
+        article.setTitle(articleDto.getTitle());
+        article.setContent(articleDto.getContent());
+        
+        // 1. 기존 태그 매핑 삭제
+        List<ArticleTag> oldTags = articleTagRepository.findByArticle(article);
+        articleTagRepository.deleteAll(oldTags);
+        
+        // 2. 새 태그 저장 (기존 saveTagsForArticle 로직 재사용)
+        saveTagsForArticle(article, tagNames);
+    }
+
 
     @Transactional(readOnly = true)
     public long getArticleCount(String username) {
@@ -94,23 +108,41 @@ public class ArticleService {
 
     // ArticleService.java에 추가할 예시 로직
     @Transactional
-    public void saveArticleWithTags(Article article, String tagNames) {
-        // 1. 게시글 저장
-        articleRepository.save(article);
-
-        // 2. 태그 처리
-        if (tagNames != null && !tagNames.isEmpty()) {
-            String[] tags = tagNames.split(",");
-            for (String tagName : tags) {
-                String trimmedTag = tagName.trim();
-                // 태그 찾기 혹은 생성
-                // Tag tag = tagRepository.findByTagName(trimmedTag)
-                    // .orElseGet(() -> tagRepository.save(new Tag(trimmedTag)));
-                
-                // 연결 테이블 저장
-                // articleTagRepository.save(new ArticleTag(article, tag));
-            }
+    public void saveTagsForArticle(Article article, String tagNames) {
+        if (tagNames == null || tagNames.isEmpty()) return;
+        
+        String[] tags = tagNames.split(",");
+        for (String name : tags) {
+            String cleanName = name.trim();
+            if (cleanName.isEmpty()) continue;
+            
+            // 2. 태그가 없으면 생성, 있으면 가져오기
+            Tag tag = tagRepository.findByTagName(cleanName)
+                    .orElseGet(() -> tagRepository.save(new Tag(cleanName)));
+            
+            // 3. 매핑 테이블(ARTICLE_TAG) 저장
+            articleTagRepository.save(new ArticleTag(article, tag));
         }
     }
+
+    @Transactional(readOnly = true)
+    public List<Article> getArticlesByTag(String tagName) {
+        // 1. 특정 태그가 달린 매핑 정보들을 가져옴
+        List<ArticleTag> articleTags = articleTagRepository.findByTag_TagName(tagName);
+        
+        // 2. 매핑 정보에서 Article만 추출하여 리스트로 변환
+        return articleTags.stream()
+                .map(ArticleTag::getArticle)
+                .collect(Collectors.toList());
+    }
+
+    public List<Tag> getTagsByArticle(Article article) {
+    // ArticleTagRepository를 사용하여 해당 게시글의 모든 매핑 정보를 가져옴
+    List<ArticleTag> articleTags = articleTagRepository.findByArticle(article);
     
+    // 매핑 정보에서 Tag 객체만 추출
+    return articleTags.stream()
+            .map(ArticleTag::getTag)
+            .collect(Collectors.toList());
+    }
 }

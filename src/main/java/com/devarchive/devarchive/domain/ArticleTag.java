@@ -6,7 +6,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
@@ -22,7 +24,8 @@ import lombok.Setter;
 // 3. 각 태그가 Tag 테이블에 존재하면 가져오고, 없으면 TagRepository.save()를 호출합니다.
 // 4. 마지막으로 ArticleTag 객체를 생성하여 Article과 Tag를 연결합니다.
 
-
+@NoArgsConstructor // 기본 생성자 (JPA 필수)
+@AllArgsConstructor // 모든 필드를 받는 생성자 (이게 있으면 됩니다!)
 public class ArticleTag {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // PK
@@ -34,4 +37,10 @@ public class ArticleTag {
     @ManyToOne
     @JoinColumn(name = "tag_id") // FK
     private Tag tag;
+
+    // 만약 Lombok 대신 직접 작성하고 싶다면 아래 생성자를 넣으세요
+    public ArticleTag(Article article, Tag tag) {
+        this.article = article;
+        this.tag = tag;
+    }
 }

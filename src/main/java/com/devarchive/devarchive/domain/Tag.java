@@ -16,4 +16,12 @@ public class Tag {
 
     @Column(unique = true)
     private String tagName; // 예: "SpringBoot"
+
+    // 기본 생성자 (JPA 필수)
+    public Tag() {}
+
+    // 태그 이름을 받는 생성자
+    public Tag(String tagName) {
+        this.tagName = tagName;
+    }
 }

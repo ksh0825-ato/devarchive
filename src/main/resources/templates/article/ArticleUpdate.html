@@ -1,5 +1,6 @@
-<form th:action="@{/article/ArticleUpdate(articleId=${article.articleId})}" th:object="${article}" method="post">
-    <!-- hidden 타입으로 ID를 넘겨주기도 하지만, 위처럼 URL 파라미터로 넘겨도 됩니다 -->
+<form th:action="@{/article/ArticleUpdate}" method="post">
+    <!-- articleId는 숨겨서 전달 -->
+    <input type="hidden" name="articleId" th:value="${article.articleId}">
     
     <label>제목:</label>
     <input type="text" th:field="*{title}">
@@ -7,6 +8,9 @@
     <label>본문:</label>
     <textarea th:field="*{content}"></textarea>
     
+    <!-- 태그 수정 입력창 추가 -->
+    <label>태그 (콤마로 구분):</label>
+    <input type="text" name="tagNames" th:value="${tagNames}" placeholder="Java, Spring">
+    
     <button type="submit">수정 완료</button>
-    <a th:href="@{/article/ArticleDetail(articleId=${article.articleId})}">취소</a>
 </form>

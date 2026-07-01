@@ -47,7 +47,7 @@
             <tr th:each="article : ${articlePage.content}">
                 <td th:text="${article.articleId}">1</td>
                 <td>
-                    <a th:href="@{/article/ArticleDetail(articleId=${article.articleId})}" 
+                    <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" th:text="${article.title}" >
                        th:text="${article.title}">학습 기록 제목</a>
                 </td>
                 <td>
@@ -56,7 +56,7 @@
                 </td>
                 <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>
                 <td>
-                    <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}">수정</a>
+                    <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}">수정하기</a>
                     <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
                        onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
                 </td>
