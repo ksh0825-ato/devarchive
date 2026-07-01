@@ -9,11 +9,15 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.Article;
+import com.devarchive.devarchive.domain.ArticleTag;
 import com.devarchive.devarchive.domain.JobPost;
+import com.devarchive.devarchive.domain.Tag;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
+import com.devarchive.devarchive.repository.ArticleTagRepository;
 import com.devarchive.devarchive.repository.JobPostRepository;
+import com.devarchive.devarchive.repository.TagRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +27,8 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final AccountRepository accountRepository;
     private final JobPostRepository jobPostRepository;
+    private final TagRepository tagRepository;
+    private final ArticleTagRepository articleTagRepository;
 
     public Page<Article> findArticlesByUsername(String username, Pageable pageable) {
         return articleRepository.findByAccount_Username(username, pageable);
@@ -84,6 +90,27 @@ public class ArticleService {
     public long getUniqueJobCount(String username) {
         // 유저가 작성한 학습 기록 중, 연결된 공고(JobPost)가 있는 유니크한 공고 개수
         return articleRepository.countDistinctJobByAccount_Username(username);
+    }
+
+    // ArticleService.java에 추가할 예시 로직
+    @Transactional
+    public void saveArticleWithTags(Article article, String tagNames) {
+        // 1. 게시글 저장
+        articleRepository.save(article);
+
+        // 2. 태그 처리
+        if (tagNames != null && !tagNames.isEmpty()) {
+            String[] tags = tagNames.split(",");
+            for (String tagName : tags) {
+                String trimmedTag = tagName.trim();
+                // 태그 찾기 혹은 생성
+                Tag tag = tagRepository.findByTagName(trimmedTag)
+                    .orElseGet(() -> tagRepository.save(new Tag(trimmedTag)));
+                
+                // 연결 테이블 저장
+                articleTagRepository.save(new ArticleTag(article, tag));
+            }
+        }
     }
     
 }

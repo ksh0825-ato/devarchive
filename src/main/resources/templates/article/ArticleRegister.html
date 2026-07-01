@@ -30,6 +30,9 @@
         <label>본문:</label><br>
         <textarea th:field="*{content}" placeholder="학습 내용 기록" required></textarea>
     </p>
+
+    <label>태그 (콤마로 구분):</label>
+    <input type="text" name="tagNames" placeholder="Java,SpringBoot,JPA">
     
     <button type="submit">작성 완료</button>
 </form>

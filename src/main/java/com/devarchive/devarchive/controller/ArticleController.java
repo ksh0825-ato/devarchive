@@ -65,12 +65,23 @@ public class ArticleController {
         model.addAttribute("articleCount", articleService.getArticleCount(username));
         model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
 
+
         // 2. 모델에 담기
         model.addAttribute("articlePage", myArticles);
         model.addAttribute("username", username);
 
         return "article/ArticleList";
     }   
+
+    // 태그 추가
+    @PostMapping("/ArticleRegister")
+    public String register(@ModelAttribute Article article, 
+                        @RequestParam("tagNames") String tagNames, 
+                        Principal principal) {
+        // ... 유저 정보 설정 로직 ...
+        articleService.saveArticleWithTags(article, tagNames);
+        return "redirect:/article/ArticleList";
+    }
 
 
     @PostMapping("/ArticleList")
