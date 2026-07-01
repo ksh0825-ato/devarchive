@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>회원가입</title>
+</head>
+
+<body>
+<!-- th:action=@{} : url 경로 설정 용도 -->
+<form th:action="@{/account/register}" method="post">
+    <h1>회원가입</h1>
+    아이디: <input type="text" name="username"> <br>
+    비밀번호: <input type="password" name="password"> <br>
+    이메일: <input type="email" name="email"> <br>
+    닉네임: <input type="text" name="nickname"> <br>
+
+    <!-- 역할 선택 필드 추가 -->
+    <label>회원 유형:</label>
+    <select name="role">
+        <option value="ROLE_USER">일반 유저</option>
+        <option value="ROLE_COMPANY">기업</option>
+    </select> <br>
+
+    <button type="submit">가입</button>
+</form>
+</body>
+</html>

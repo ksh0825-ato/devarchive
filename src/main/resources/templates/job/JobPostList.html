@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>채용 공고 리스트</title>
+</head>
+<body>
+
+    <h1>공고 목록 조회</h1>
+
+    <!-- 데이터가 있을 때만 테이블을 보여주도록 수정 -->
+    <table border="1" th:if="${job != null and job.content.size() > 0}">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>회사명</th>
+                <th>등록일</th>
+                <th>상세보기</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="JobPost : ${job.content}">
+                <td th:text="${JobPost.jobId}"></td>
+                <td th:text="${JobPost.jobPostTitle}"></td>
+                <td th:text="${JobPost.companyName}"></td>
+                <td th:text="${#temporals.format(JobPost.createdAt, 'yyyy-MM-dd')}"></td>
+                <td><a th:href="@{/job/JobPostDetail(jobId=${JobPost.jobId})}">보기</a></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 데이터가 없을 때 메시지 표시 -->
+    <p th:if="${job == null or job.content.size() == 0}">등록된 공고가 없습니다.</p>
+
+    <a th:href="@{/job/JobPostRegister}">글쓰기</a>
+
+</body>
+</html>

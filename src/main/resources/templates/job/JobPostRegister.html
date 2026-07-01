@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <title>취업 공고 작성</title>
+</head>
+<body>
+    <h1>취업 공고 작성</h1>
+    <form th:action="@{/job/JobPostRegister}" method="post">
+    <!-- DTO의 필드명과 일치시켜야 합니다 -->
+        <p>제목 : <input type="text" name="jobPostTitle"></p>
+        <p>회사명 : <input type="text" name="companyName"></p>
+        <p>직무 : <input type="text" name="position"></p>
+        <p>설명 : <textarea name="description" rows="5" cols="30"></textarea></p>
+        <p>URL : <input type="text" name="url"></p>
+        <p>마감일 : <input type="date" name="deadline"></p>
+    
+    <button type="submit">저장</button>
+</form>

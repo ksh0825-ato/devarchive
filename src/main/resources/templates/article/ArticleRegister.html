@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>기사(공부 기록) 작성</title>
+</head>
+<body>
+
+<!-- th:object는 모델에 담긴 DTO 객체명을 그대로 사용합니다 -->
+<form th:action="@{/article/ArticleRegister}" th:object="${articleDto}" method="post">
+    
+    <p>
+        <label>제목:</label><br>
+        <input type="text" th:field="*{title}" placeholder="제목 입력" required>
+    </p>
+    
+    <p>
+        <label>관련 채용 공고 선택:</label><br>
+        <!-- th:field="*{jobId}"를 사용하면 DTO의 jobId 필드와 자동으로 바인딩됩니다 -->
+        <select th:field="*{jobId}">
+            <option value="">-- 공고 선택 --</option>
+            <option th:each="job : ${jobPosts}" 
+                    th:value="${job.jobId}" 
+                    th:text="${job.companyName + ' (' + job.position + ')'}">
+            </option>
+        </select>
+    </p>
+    
+    <p>
+        <label>본문:</label><br>
+        <textarea th:field="*{content}" placeholder="학습 내용 기록" required></textarea>
+    </p>
+    
+    <button type="submit">작성 완료</button>
+</form>
+
+</body>
+</html>

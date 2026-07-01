@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>DevArchive 메인</title>
+</head>
+<body>
+
+    <header>
+        <h1>DevArchive</h1>
+        <a href="/logout">로그아웃</a>
+    </header>
+
+    <hr>
+
+    <main>
+        <!-- 기본 유저 정보 섹션 -->
+        <section id="user-info">
+            <h2>사용자 정보</h2>
+            <p><strong>아이디:</strong> <span th:text="${account.username}">아이디</span></p>
+            <p><strong>닉네임:</strong> <span th:text="${account.nickname}">닉네임</span></p>
+            <p><strong>유형:</strong> 
+                <span th:text="${isCompany} ? '기업 회원' : '일반 회원'">회원유형</span>
+            </p>
+        </section>
+
+        <hr>
+
+        <!-- 기능 분기 섹션 -->
+        <section id="menu">
+            <h2>메뉴</h2>
+            
+            <!-- 공통 기능 -->
+            <ul>
+                <li><a href="/job/JobPostList">전체 채용공고 보기</a></li>
+            </ul>
+
+            <!-- 기업 회원 전용 기능 -->
+            <div th:if="${isCompany}">
+                <h3>기업 전용 메뉴</h3>
+                <ul>
+                    <li><a href="/job/JobPostRegister">채용공고 등록하기</a></li>
+                </ul>
+            </div>
+
+            <!-- 일반 회원 전용 기능 -->
+            <div th:unless="${isCompany}">
+                <h3>개인 회원 전용 메뉴</h3>
+                <ul>
+                    <li><a href="/article/ArticleList">내 학습글 관리</a></li>
+                    <li><a href="/job/my-interest">관심 공고 목록</a></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+</body>
+</html>

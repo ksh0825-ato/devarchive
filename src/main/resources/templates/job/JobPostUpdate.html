@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채용 공고 수정</title>
+</head>
+<body>
+    <h1>공고 수정</h1>
+
+    <!-- 수정 처리 요청을 보낼 폼 -->
+    <form th:action="@{/job/JobPostUpdate}" method="post">
+        
+        <!-- 수정할 글의 ID를 숨겨서 전달 -->
+        <input type="hidden" name="jobId" th:value="${job.jobId}">
+
+        <p>
+            <label>제목:</label><br>
+            <input type="text" name="jobPostTitle" th:value="${job.jobPostTitle}" required>
+        </p>
+        <p>
+            <label>회사명:</label><br>
+            <input type="text" name="companyName" th:value="${job.companyName}" required>
+        </p>
+        <p>
+            <label>직무:</label><br>
+            <input type="text" name="position" th:value="${job.position}" required>
+        </p>
+        <p>
+            <label>설명:</label><br>
+            <textarea name="description" th:text="${job.description}" required></textarea>
+        </p>
+        <p>
+            <label>URL:</label><br>
+            <input type="text" name="url" th:value="${job.url}">
+        </p>
+        <p>
+            <label>마감일:</label><br>
+            <!-- 날짜 포맷 주의: HTML date input은 yyyy-MM-dd 형식을 요구함 -->
+            <input type="date" name="deadline" th:value="${#temporals.format(job.deadline, 'yyyy-MM-dd')}">
+        </p>
+
+        <button type="submit">수정 완료</button>
+        <a th:href="@{/job/JobPostDetail(jobId=${job.jobId})}">취소</a>
+    </form>
+</body>
+</html>
