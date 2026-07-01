@@ -104,11 +104,11 @@ public class ArticleService {
             for (String tagName : tags) {
                 String trimmedTag = tagName.trim();
                 // 태그 찾기 혹은 생성
-                Tag tag = tagRepository.findByTagName(trimmedTag)
-                    .orElseGet(() -> tagRepository.save(new Tag(trimmedTag)));
+                // Tag tag = tagRepository.findByTagName(trimmedTag)
+                    // .orElseGet(() -> tagRepository.save(new Tag(trimmedTag)));
                 
                 // 연결 테이블 저장
-                articleTagRepository.save(new ArticleTag(article, tag));
+                // articleTagRepository.save(new ArticleTag(article, tag));
             }
         }
     }
