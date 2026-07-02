@@ -20,11 +20,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.devarchive.devarchive.domain.Article;
+import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.Tag;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.ArticleRepository;
+import com.devarchive.devarchive.repository.StudyProgressRepository;
 import com.devarchive.devarchive.service.ArticleService;
 import com.devarchive.devarchive.service.JobPostService;
+import com.devarchive.devarchive.service.StudyProgressService;
 
 import lombok.RequiredArgsConstructor;
 @Controller
@@ -34,6 +37,7 @@ public class ArticleController {
     private final ArticleService articleService;
     private final JobPostService jobPostService;
     private final ArticleRepository articleRepository;
+    private final StudyProgressService studyProgressService;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/ArticleRegister")
@@ -68,14 +72,19 @@ public class ArticleController {
         // 1. 로그인한 유저의 username으로 글 조회
         String username = principal.getName();
         Page<Article> myArticles = articleService.findArticlesByUsername(username, pageable);
-        
+
+        List<StudyProgress> progressList = studyProgressService.findAll();
+
         model.addAttribute("articleCount", articleService.getArticleCount(username));
         model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
 
 
         // 2. 모델에 담기
         model.addAttribute("articlePage", myArticles);
+        model.addAttribute("totalArticles", myArticles.getTotalElements()); // 전체 글 수
         model.addAttribute("username", username);
+        model.addAttribute("progressList", progressList);
+        model.addAttribute("isSearchMode", false); // 검색 모드 아님
 
         return "article/ArticleList";
     }   
@@ -87,6 +96,8 @@ public class ArticleController {
             
             String username = principal.getName();
             
+            List<StudyProgress> progressList = studyProgressService.findAll();
+
             // 1. 통계 데이터 모델에 추가 (이 부분이 추가되었습니다)
             
             long count = articleService.getArticleCount(username);
@@ -109,7 +120,8 @@ public class ArticleController {
             model.addAttribute("articlePage", articlePage);
             model.addAttribute("username", username);
             model.addAttribute("keyword", keyword); // 검색어를 유지하기 위해 모델에 추가
-            
+            model.addAttribute("progressList", progressList);
+
             return "article/ArticleList";
         }
 
@@ -167,14 +179,25 @@ public class ArticleController {
     @GetMapping("/ArticleSearchByTag")
     public String searchByTag(@RequestParam("tagName") String tagName, Model model) {
         List<Article> articles = articleService.getArticlesByTag(tagName);
+        List<StudyProgress> progressList = studyProgressService.findAll(); // 모든 진행 상황 조회
         System.out.println("검색된 글 개수: " + (articles != null ? articles.size() : "null"));
 
-      // List를 Page 객체로 변환 (페이징 정보 없이 전체 리스트를 content로 설정)
-      Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), articles.size());
+        // 1. 통계 데이터 추가 (서비스에 아래 메서드들이 구현되어 있어야 함)
+            long totalArticles = articles.size();
+            long studyingCount = articleService.countStudyingProgress(); // 진행 중인 공고 수
 
+
+        // List를 Page 객체로 변환 (페이징 정보 없이 전체 리스트를 content로 설정)
+        Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), articles.size());
+
+        // 2. 모델에 전달
         model.addAttribute("articlePage", articlePage); // HTML에서 기대하는 이름으로 전달
         model.addAttribute("tagName", tagName);
-        
+        model.addAttribute("isSearchMode", true); // 검색 결과 모드임을 알리는 플래그 
+        model.addAttribute("progressList", progressList);
+        model.addAttribute("totalArticles", totalArticles); // 추가
+        model.addAttribute("studyingCount", studyingCount); // 추가
+
         // 목록 페이지(ArticleList.html)를 재사용하거나 별도 뷰를 지정
         return "article/ArticleList"; 
     }

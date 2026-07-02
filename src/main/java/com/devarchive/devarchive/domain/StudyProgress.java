@@ -27,13 +27,13 @@ public class StudyProgress {
     @JoinColumn(name = "user_id") // FK
     private Account account;
 
-@Enumerated(EnumType.STRING)
-    private Status status;
+    @Enumerated(EnumType.STRING)
+    private ProgressStatus status;
 
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     // 클래스 내부 맨 아래에 정의
-    public enum Status {
+    public enum ProgressStatus {
         NOT_STARTED, STUDYING, COMPLETED
     }
 }

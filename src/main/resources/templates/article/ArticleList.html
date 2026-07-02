@@ -12,13 +12,33 @@
 </head>
 <body>
 
-    <!-- 통계 박스 -->
-    <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #dee2e6;">
-        <h3 style="margin-top: 0;">학습 통계</h3>
-        <p>
-            총 학습 기록: <strong th:text="${articleCount != null ? articleCount : '값없음'}">0</strong> 건 | 
-            분석 중인 공고: <strong th:text="${jobCount != null ? jobCount : '값없음'}">0</strong> 개
-        </p>
+    <div class="container my-4">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card p-3 shadow-sm">
+                    <h5>학습 통계</h5>
+                <p>
+                    총 학습 기록: <span th:text="${totalArticles != null ? totalArticles : 0}">0</span>건 | 
+                    분석 중인 공고: <span th:text="${#lists.size(progressList)}">0</span>개
+                </p>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card p-3 shadow-sm">
+                    <h5>진행 중인 채용공고</h5>
+                    <ul class="list-group list-group-flush">
+                        <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between">
+                            <span th:text="${progress.jobPost.companyName}">회사명</span>
+                            <span class="badge" 
+                                th:text="${progress.status}"
+                                th:classappend="${progress.status == 'STUDYING' ? 'bg-warning' : 'bg-success'}">
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
     <h1>내 학습 기록</h1>
@@ -31,6 +51,17 @@
             <a th:href="@{/article/ArticleList}">초기화</a>
         </form>
     </div>
+
+    <div class="container my-4">
+    <div class="d-flex justify-content-end">
+            <form th:action="@{/article/ArticleSearchByTag}" method="get" class="d-flex">
+                <input type="text" name="tagName" class="form-control me-2" placeholder="태그 입력 (예: Spring)" required>
+                <button type="submit" class="btn btn-outline-primary">검색</button>
+            </form>
+        </div>
+    </div>
+
+    <br>
 
     <!-- 목록 테이블 -->
     <table>

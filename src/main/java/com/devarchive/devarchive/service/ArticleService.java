@@ -1,5 +1,6 @@
 package com.devarchive.devarchive.service;
 
+import com.devarchive.devarchive.repository.StudyProgressRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,7 @@ import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.ArticleTag;
 import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.domain.Tag;
+import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
+    private final StudyProgressRepository studyProgressRepository;
     private final ArticleRepository articleRepository;
     private final AccountRepository accountRepository;
     private final JobPostRepository jobPostRepository;
@@ -153,6 +156,10 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
+    // ArticleService.java
+    public long countStudyingProgress() {
+        return studyProgressRepository.countByStatus(ProgressStatus.STUDYING);
+    }
 
     @Transactional(readOnly = true)
     public List<Tag> getTagsByArticle(Article article) {
