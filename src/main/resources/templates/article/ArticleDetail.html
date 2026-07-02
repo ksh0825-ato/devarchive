@@ -25,12 +25,11 @@
     <!-- 본문 내용은 엔터키가 적용되도록 스타일 처리 추천 -->
     <p th:text="${article.content}" style="white-space: pre-wrap;"></p>
 
-    <div>
-        <strong>태그:</strong>
-        <span th:each="tag : ${tags}">
-            <a th:href="@{/article/searchByTag(tagName=${tag.tagName})}" 
-            th:text="'#' + ${tag.tagName}">#태그</a>
-        </span>
+    <div class="tags">
+        <a th:each="tag : ${tags}" 
+        th:href="@{/article/ArticleSearchByTag(tagName=${tag.tagName})}" 
+        th:text="'#' + ${tag.tagName}" 
+        class="badge bg-primary">#Tag</a>
     </div>
 
     <div style="margin-top: 20px;">

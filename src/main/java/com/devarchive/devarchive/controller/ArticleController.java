@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -155,24 +157,26 @@ public class ArticleController {
         return "redirect:/article/ArticleDetail/" + articleId;
     }
 
-
     // 공부글 삭제 처리
     @GetMapping("/ArticleDelete")
-      public String delete(@RequestParam("articleId") Long articleId) {
-        articleRepository.deleteById(articleId);
-        return "redirect:/article/ArticleList"; // 삭제 후 목록으로 이동
+    public String delete(@RequestParam("articleId") Long articleId) {
+        articleService.deleteArticle(articleId); // 위에서 만든 서비스 메서드 호출
+        return "redirect:/article/ArticleList";
     }
 
-    @GetMapping("/searchByTag")
+    @GetMapping("/ArticleSearchByTag")
     public String searchByTag(@RequestParam("tagName") String tagName, Model model) {
         List<Article> articles = articleService.getArticlesByTag(tagName);
+        System.out.println("검색된 글 개수: " + (articles != null ? articles.size() : "null"));
+
+      // List를 Page 객체로 변환 (페이징 정보 없이 전체 리스트를 content로 설정)
+      Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), articles.size());
+
+        model.addAttribute("articlePage", articlePage); // HTML에서 기대하는 이름으로 전달
+        model.addAttribute("tagName", tagName);
         
-        model.addAttribute("articles", articles);
-        model.addAttribute("currentTag", tagName);
-        
-        // 기존에 글 목록을 보여주던 화면(ArticleList.html)을 재사용합니다
+        // 목록 페이지(ArticleList.html)를 재사용하거나 별도 뷰를 지정
         return "article/ArticleList"; 
     }
     
-
 }

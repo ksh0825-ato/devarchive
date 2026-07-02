@@ -1,6 +1,7 @@
 package com.devarchive.devarchive.service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ public class ArticleService {
     // 제목(title)에 키워드가 포함된 글을 찾는 메서드를 Repository에 추가해야 합니다.
     return articleRepository.findByAccount_UsernameAndTitleContaining(username, keyword, pageable);
     }
+    
 
     @Transactional
     public Article saveArticle(ArticleDto articleDto, String username, Long jobId) {
@@ -95,6 +97,19 @@ public class ArticleService {
         saveTagsForArticle(article, tagNames);
     }
 
+    @Transactional
+    public void deleteArticle(Long articleId) {
+        Article article = articleRepository.findById(articleId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        // 1. 해당 게시글과 연결된 태그 매핑(ARTICLE_TAG) 먼저 삭제
+        List<ArticleTag> articleTags = articleTagRepository.findByArticle(article);
+        articleTagRepository.deleteAll(articleTags);
+        
+        // 2. 그 다음 게시글 삭제
+        articleRepository.delete(article);
+    }
+
 
     @Transactional(readOnly = true)
     public long getArticleCount(String username) {
@@ -129,21 +144,29 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public List<Article> getArticlesByTag(String tagName) {
         // 1. 특정 태그가 달린 매핑 정보들을 가져옴
-        List<ArticleTag> articleTags = articleTagRepository.findByTag_TagName(tagName);
+        List<ArticleTag> articleTags = articleTagRepository.findByTagTagName(tagName);
         
         // 2. 매핑 정보에서 Article만 추출하여 리스트로 변환
         return articleTags.stream()
                 .map(ArticleTag::getArticle)
+                .distinct() // 중복 제거
                 .collect(Collectors.toList());
     }
 
+
+    @Transactional(readOnly = true)
     public List<Tag> getTagsByArticle(Article article) {
-    // ArticleTagRepository를 사용하여 해당 게시글의 모든 매핑 정보를 가져옴
-    List<ArticleTag> articleTags = articleTagRepository.findByArticle(article);
-    
-    // 매핑 정보에서 Tag 객체만 추출
-    return articleTags.stream()
-            .map(ArticleTag::getTag)
-            .collect(Collectors.toList());
+        // 1. 레포지토리에서 데이터 조회
+        List<ArticleTag> articleTags = articleTagRepository.findByArticle(article);
+        
+        // 2. null 체크 및 빈 리스트 처리 (Null 방어)
+        if (articleTags == null || articleTags.isEmpty()) {
+            return Collections.emptyList(); // null 대신 비어있는 리스트 반환
+        }
+        
+        // 3. Tag 객체 추출
+        return articleTags.stream()
+                .map(ArticleTag::getTag)
+                .collect(Collectors.toList());
     }
 }
