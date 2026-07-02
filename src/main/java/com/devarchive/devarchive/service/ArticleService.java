@@ -83,6 +83,7 @@ public class ArticleService {
     @Transactional
     public void updateArticle(Long articleId, ArticleDto articleDto, String tagNames) {
         Article article = articleRepository.findById(articleId).orElseThrow();
+
         article.setTitle(articleDto.getTitle());
         article.setContent(articleDto.getContent());
         

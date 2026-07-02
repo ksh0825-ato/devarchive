@@ -124,7 +124,15 @@ public class ArticleController {
 
     @GetMapping("/ArticleUpdate")
     public String updateForm(@RequestParam("articleId") Long articleId, Model model) {
+        System.out.println("조회할 articleId: " + articleId); // 로그 추가
+        
         Article article = articleService.findById(articleId);
+        
+        if (article == null) {
+            System.out.println("해당 ID의 게시글이 없습니다!");
+            return "error/404"; // 혹은 적절한 에러 페이지
+        }
+    
         List<Tag> tags = articleService.getTagsByArticle(article);
         
         model.addAttribute("article", article);
