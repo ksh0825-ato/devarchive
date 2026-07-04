@@ -1,7 +1,9 @@
 package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -21,10 +23,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.StudyProgress;
+import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.domain.Tag;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.ArticleRepository;
-import com.devarchive.devarchive.repository.StudyProgressRepository;
 import com.devarchive.devarchive.service.ArticleService;
 import com.devarchive.devarchive.service.JobPostService;
 import com.devarchive.devarchive.service.StudyProgressService;
@@ -66,64 +68,84 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleList")
-        public String myArticleList(Principal principal, Model model, 
+    public String myArticleList(Principal principal, Model model, 
                                 @PageableDefault(size = 10) Pageable pageable) {
         
-        // 1. 로그인한 유저의 username으로 글 조회
         String username = principal.getName();
         Page<Article> myArticles = articleService.findArticlesByUsername(username, pageable);
 
-        List<StudyProgress> progressList = studyProgressService.findAll();
+        // 1. 여기서 서비스의 정확한 카운트 메서드를 호출합니다.
+        long jobCount = articleService.getUniqueJobCount(username);
+
+        // 1. 로그인한 유저의 진행 상황 리스트만 가져오기 (서비스에 이 메서드 구현 필요)
+        List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
+        
+        // 2. 진행 중(STUDYING)인 개수만 별도 계산
+        long studyingCount = progressList.stream()
+                .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
+                .count();
+
+        // 2. 모델에 정확한 이름으로 담습니다.
+        model.addAttribute("jobCount", jobCount);
 
         model.addAttribute("articleCount", articleService.getArticleCount(username));
         model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
+        model.addAttribute("studyingCount", studyingCount); // 이 값을 추가해야 합니다!
 
-
-        // 2. 모델에 담기
         model.addAttribute("articlePage", myArticles);
-        model.addAttribute("totalArticles", myArticles.getTotalElements()); // 전체 글 수
-        model.addAttribute("username", username);
+        model.addAttribute("totalArticles", myArticles.getTotalElements()); 
         model.addAttribute("progressList", progressList);
-        model.addAttribute("isSearchMode", false); // 검색 모드 아님
+        model.addAttribute("isSearchMode", false);
 
         return "article/ArticleList";
-    }   
+    }
 
     @PostMapping("/ArticleList")
-        public String searchMyArticles(Principal principal, Model model,
-                                        @RequestParam(value = "keyword", required = false) String keyword,
-                                        @PageableDefault(size = 10) Pageable pageable) {
-            
-            String username = principal.getName();
-            
-            List<StudyProgress> progressList = studyProgressService.findAll();
+    public String searchMyArticles(Principal principal, Model model,
+                                    @RequestParam(value = "keyword", required = false) String keyword,
+                                    @PageableDefault(size = 10) Pageable pageable) {
+        
+        String username = principal.getName();
+        
+        // 컨트롤러 내부 수정: progressList 가져온 직후 중복 제거
+        List<StudyProgress> rawList = studyProgressService.getProgressByUsername(username);
 
-            // 1. 통계 데이터 모델에 추가 (이 부분이 추가되었습니다)
-            
-            long count = articleService.getArticleCount(username);
-            long jobCount = articleService.getUniqueJobCount(username);
-    
-            // 로그 찍어보기 (콘솔창 확인)
-            System.out.println("로그 확인 -> 학습기록 수: " + count + ", 공고 수: " + jobCount);
+        List<StudyProgress> progressList = rawList.stream()
+            .collect(Collectors.collectingAndThen(
+                Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(p -> p.getJobPost().getId()))),
+                ArrayList::new
+            ));
 
-            model.addAttribute("articleCount", articleService.getArticleCount(username));
-            model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
-            
-            // 검색어가 있으면 검색 결과 조회, 없으면 전체 조회
-            Page<Article> articlePage;
-            if (keyword != null && !keyword.isEmpty()) {
-                articlePage = articleService.searchArticles(username, keyword, pageable);
-            } else {
-                articlePage = articleService.findArticlesByUsername(username, pageable);
-            }
-            
-            model.addAttribute("articlePage", articlePage);
-            model.addAttribute("username", username);
-            model.addAttribute("keyword", keyword); // 검색어를 유지하기 위해 모델에 추가
-            model.addAttribute("progressList", progressList);
+        System.out.println(">>> 조회된 progressList 크기: " + progressList.size());
+        progressList.forEach(p -> System.out.println(">>> 상태 확인: " + p.getStatus()));
+        
+        long studyingCount = progressList.stream()
+                .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
+                .count();
 
-            return "article/ArticleList";
+        System.out.println(">>> 필터링 후 studyingCount: " + studyingCount);
+        
+        // 2. 검색 및 데이터 조회
+        Page<Article> articlePage;
+        if (keyword != null && !keyword.isEmpty()) {
+            articlePage = articleService.searchArticles(username, keyword, pageable);
+        } else {
+            articlePage = articleService.findArticlesByUsername(username, pageable);
         }
+        
+        // 3. 모델에 모두 담기
+        model.addAttribute("articleCount", articleService.getArticleCount(username));
+        model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
+        model.addAttribute("studyingCount", studyingCount); // 통계 추가
+        model.addAttribute("articlePage", articlePage);
+        model.addAttribute("totalArticles", articlePage.getTotalElements()); // 전체 개수 동기화
+        model.addAttribute("progressList", progressList);
+        model.addAttribute("username", username);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("isSearchMode", true);
+
+        return "article/ArticleList";
+    }
 
     // Article 상세 조회
     @GetMapping("/ArticleDetail/{articleId}")
@@ -177,26 +199,27 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleSearchByTag")
-    public String searchByTag(@RequestParam("tagName") String tagName, Model model) {
+    public String searchByTag(@RequestParam("tagName") String tagName, Principal principal, Model model) {
+        String username = principal.getName();
+        
         List<Article> articles = articleService.getArticlesByTag(tagName);
-        List<StudyProgress> progressList = studyProgressService.findAll(); // 모든 진행 상황 조회
+        // Page 객체 생성 시 정확한 전체 사이즈를 넘겨줌
+        Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), (long) articles.size());
         System.out.println("검색된 글 개수: " + (articles != null ? articles.size() : "null"));
 
         // 1. 통계 데이터 추가 (서비스에 아래 메서드들이 구현되어 있어야 함)
-            long totalArticles = articles.size();
-            long studyingCount = articleService.countStudyingProgress(); // 진행 중인 공고 수
-
-
-        // List를 Page 객체로 변환 (페이징 정보 없이 전체 리스트를 content로 설정)
-        Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), articles.size());
+        List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
+            long studyingCount = progressList.stream()
+                    .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
+                    .count();
 
         // 2. 모델에 전달
-        model.addAttribute("articlePage", articlePage); // HTML에서 기대하는 이름으로 전달
+        model.addAttribute("articlePage", articlePage);
         model.addAttribute("tagName", tagName);
         model.addAttribute("isSearchMode", true); // 검색 결과 모드임을 알리는 플래그 
         model.addAttribute("progressList", progressList);
-        model.addAttribute("totalArticles", totalArticles); // 추가
-        model.addAttribute("studyingCount", studyingCount); // 추가
+        model.addAttribute("totalArticles", (long) articles.size()); // 리스트 사이즈를 명확히 할당
+        model.addAttribute("studyingCount", studyingCount);
 
         // 목록 페이지(ArticleList.html)를 재사용하거나 별도 뷰를 지정
         return "article/ArticleList"; 

@@ -1,6 +1,5 @@
 package com.devarchive.devarchive.service;
 
-import com.devarchive.devarchive.repository.StudyProgressRepository;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -15,13 +14,15 @@ import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.ArticleTag;
 import com.devarchive.devarchive.domain.JobPost;
-import com.devarchive.devarchive.domain.Tag;
+import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
+import com.devarchive.devarchive.domain.Tag;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
 import com.devarchive.devarchive.repository.ArticleTagRepository;
 import com.devarchive.devarchive.repository.JobPostRepository;
+import com.devarchive.devarchive.repository.StudyProgressRepository;
 import com.devarchive.devarchive.repository.TagRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class ArticleService {
     private final JobPostRepository jobPostRepository;
     private final TagRepository tagRepository;
     private final ArticleTagRepository articleTagRepository;
-
+    
     public Page<Article> findArticlesByUsername(String username, Pageable pageable) {
         return articleRepository.findByAccount_Username(username, pageable);
     }
@@ -48,18 +49,30 @@ public class ArticleService {
 
     @Transactional
     public Article saveArticle(ArticleDto articleDto, String username, Long jobId) {
-        // 1. username으로 Account 조회
+        // 1. 사용자 조회
         Account account = accountRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        // 2. Article 엔티티 생성 및 정보 세팅
+        // 2. Article 엔티티 생성
         Article article = articleDto.toEntity();
-        article.setAccount(account); // 유저 정보 연결 (가장 중요!)
+        article.setAccount(account);
         
-        // 3. jobId가 있다면 연결 (JobPost 조회 필요)
+        // 3. JobPost 연결 및 StudyProgress 자동 생성 로직
         if (jobId != null) {
-            JobPost jobPost = jobPostRepository.findById(jobId).orElse(null);
+            JobPost jobPost = jobPostRepository.findById(jobId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 공고를 찾을 수 없습니다."));
             article.setJobPost(jobPost);
+            
+            // 해당 공고에 대해 이미 '학습 중'인 기록이 없다면 새로 생성
+            if (!studyProgressRepository.existsByAccountAndJobPost(account, jobPost)) {
+                StudyProgress progress = StudyProgress.builder()
+                        .account(account)
+                        .jobPost(jobPost)
+                        .status(ProgressStatus.STUDYING)
+                        .updatedAt(LocalDateTime.now())
+                        .build();
+                studyProgressRepository.save(progress);
+            }
         }
         
         return articleRepository.save(article);
@@ -157,8 +170,8 @@ public class ArticleService {
     }
 
     // ArticleService.java
-    public long countStudyingProgress() {
-        return studyProgressRepository.countByStatus(ProgressStatus.STUDYING);
+    public long countStudyingProgress(String username) {
+    return studyProgressRepository.countByAccountUsernameAndStatus(username, ProgressStatus.STUDYING);
     }
 
     @Transactional(readOnly = true)
@@ -175,5 +188,16 @@ public class ArticleService {
         return articleTags.stream()
                 .map(ArticleTag::getTag)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public long countAllArticles() {
+        return articleRepository.count(); // 전체 글 개수
+    }
+
+    @Transactional(readOnly = true)
+    public long countArticlesByTag(String tagName) {
+        // 태그별 검색 결과 개수 반환
+        return articleTagRepository.findByTagTagName(tagName).size();
     }
 }

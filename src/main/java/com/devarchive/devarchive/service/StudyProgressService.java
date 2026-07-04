@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.repository.StudyProgressRepository;
@@ -42,6 +41,20 @@ public class StudyProgressService {
 
     public List<StudyProgress> findAll() {
         return studyProgressRepository.findAll();
+    }
+
+    public List<StudyProgress> getProgressByUsername(String username) {
+        return studyProgressRepository.findByAccountUsernameCustom(username);
+    }
+
+    public long countStudyingByUsername(String username) {
+    // 1. 해당 유저의 모든 진행 상황을 가져온 뒤
+    List<StudyProgress> progressList = studyProgressRepository.findByAccountUsername(username);
+    
+    // 2. 메모리에서 필터링 (가장 안전하고 확실한 방법)
+    return progressList.stream()
+            .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
+            .count();
     }
 
 }
