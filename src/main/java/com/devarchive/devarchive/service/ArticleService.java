@@ -114,31 +114,45 @@ public class ArticleService {
     }
 
     @Transactional
-    public void deleteArticle(Long articleId) {
+    public void deleteArticle(Long articleId, String username) {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        // 1. 해당 게시글과 연결된 태그 매핑(ARTICLE_TAG) 먼저 삭제
-        List<ArticleTag> articleTags = articleTagRepository.findByArticle(article);
-        articleTagRepository.deleteAll(articleTags);
+        // 로그 추가
+        System.out.println(">>> [DEBUG] 세션 사용자(username): " + username);
+        System.out.println(">>> [DEBUG] 게시글 작성자(username): " + article.getAccount().getUsername());
+
+        if (!article.getAccount().getUsername().equals(username)) {
+            throw new IllegalStateException("삭제 권한이 없습니다.");
+        }
+
+        // 1. 글 삭제 전, 연결된 공고 정보 확보
+        JobPost jobPost = article.getJobPost();
         
-        // 2. 그 다음 게시글 삭제
+        if (!articleRepository.existsByAccountAndJobPost(article.getAccount(), jobPost)) {
+        studyProgressRepository.deleteByAccountAndJobPost(article.getAccount(), jobPost);
+        }
+        
+        // 2. 글 삭제
         articleRepository.delete(article);
+        
+        // 3. 만약 연결된 공고가 있고, 해당 유저가 쓴 다른 글이 없다면 StudyProgress 삭제
+        if (jobPost != null) {
+            boolean existsOtherArticles = articleRepository.existsByAccountAndJobPost(article.getAccount(), jobPost);
+            
+            if (!existsOtherArticles) {
+                studyProgressRepository.deleteByAccountAndJobPost(article.getAccount(), jobPost);
+            }
+        }
     }
 
-
-    @Transactional(readOnly = true)
-    public long getArticleCount(String username) {
-        return articleRepository.countByAccount_Username(username);
-    }
 
     @Transactional(readOnly = true)
     public long getUniqueJobCount(String username) {
-        // 유저가 작성한 학습 기록 중, 연결된 공고(JobPost)가 있는 유니크한 공고 개수
-        return articleRepository.countDistinctJobByAccount_Username(username);
+        // 공고가 연결된 게시글들의 job_id를 중복 제거하여 카운트
+        return articleRepository.countUniqueJobPostsByUsername(username);
     }
 
-    // ArticleService.java에 추가할 예시 로직
     @Transactional
     public void saveTagsForArticle(Article article, String tagNames) {
         if (tagNames == null || tagNames.isEmpty()) return;
@@ -157,6 +171,13 @@ public class ArticleService {
         }
     }
 
+    // ArticleService.java
+    public long getArticleCount(String username) {
+        // ArticleRepository에 countByAccountUsername 메서드가 있다고 가정합니다.
+        // 없다면 아래처럼 작성하세요.
+        return articleRepository.countByAccount_Username(username);
+    }
+
     @Transactional(readOnly = true)
     public List<Article> getArticlesByTag(String tagName) {
         // 1. 특정 태그가 달린 매핑 정보들을 가져옴
@@ -169,7 +190,6 @@ public class ArticleService {
                 .collect(Collectors.toList());
     }
 
-    // ArticleService.java
     public long countStudyingProgress(String username) {
     return studyProgressRepository.countByAccountUsernameAndStatus(username, ProgressStatus.STUDYING);
     }

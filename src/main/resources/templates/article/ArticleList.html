@@ -91,9 +91,12 @@
                 </td>
                 <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>
                 <td>
+                    <!-- 수정 버튼 -->
                     <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}">수정하기</a>
+                    
                     <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
-                       onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                    class="btn btn-danger"
+                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
                 </td>
             </tr>
         </tbody>

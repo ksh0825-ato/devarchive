@@ -203,10 +203,16 @@ public class ArticleController {
         return "redirect:/article/ArticleDetail/" + articleId;
     }
 
-    // 공부글 삭제 처리
     @GetMapping("/ArticleDelete")
-    public String delete(@RequestParam("articleId") Long articleId) {
-        articleService.deleteArticle(articleId); // 위에서 만든 서비스 메서드 호출
+    public String delete(@RequestParam("articleId") Long articleId, Principal principal) {
+        // 1. 로그인 여부 확인
+        if (principal == null) {
+            return "redirect:/account/login";
+        }
+
+        // 2. principal.getName()으로 실제 username을 가져와 전달
+        articleService.deleteArticle(articleId, principal.getName());
+        
         return "redirect:/article/ArticleList";
     }
 

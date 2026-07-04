@@ -38,7 +38,8 @@
 
         <!-- 삭제 버튼 -->
         <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
-           onclick="return confirm('정말 삭제하시겠습니까?');">삭제하기</a>
+        class="btn btn-danger"
+        onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
     </div>
 
     <br>

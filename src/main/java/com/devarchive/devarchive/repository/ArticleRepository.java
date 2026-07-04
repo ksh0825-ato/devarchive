@@ -10,7 +10,9 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.Article;
+import com.devarchive.devarchive.domain.JobPost;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
@@ -32,5 +34,8 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("SELECT COUNT(DISTINCT a.jobPost) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
     long countDistinctJobByAccount_Username(@Param("username") String username);
 
-    
+    @Query("SELECT count(distinct a.jobPost.id) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
+    long countUniqueJobPostsByUsername(@Param("username") String username);
+
+    boolean existsByAccountAndJobPost(Account account, JobPost jobPost);
 }

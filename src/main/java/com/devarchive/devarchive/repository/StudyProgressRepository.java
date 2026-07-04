@@ -31,4 +31,6 @@ public interface StudyProgressRepository extends JpaRepository<StudyProgress, Lo
     List<StudyProgress> findByAccountUserId(Long userId);
 
     boolean existsByAccountAndJobPost(Account account, JobPost jobPost);
+
+    void deleteByAccountAndJobPost(Account account, JobPost jobPost);
 }
