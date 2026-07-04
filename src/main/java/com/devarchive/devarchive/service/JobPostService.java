@@ -1,7 +1,11 @@
 package com.devarchive.devarchive.service;
 
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -63,6 +67,17 @@ public class JobPostService {
     // 페이징 처리된 목록 조회
     public Page<JobPost> getJobPostList(Pageable pageable) {
         return jobPostRepository.findAll(pageable);
+    }
+
+    public List<JobPost> findUrgentJobs() {
+        return jobPostRepository.findAll().stream()
+                // deadline이 오늘 이후인 공고만 필터링
+                .filter(job -> job.getDeadline() != null && job.getDeadline().isAfter(LocalDate.now()))
+                // 마감일이 빠른 순서대로 정렬
+                .sorted(Comparator.comparing(JobPost::getDeadline))
+                // 5개까지만
+                .limit(5)
+                .collect(Collectors.toList());
     }
 
     // 공고 게시글 상세 조회

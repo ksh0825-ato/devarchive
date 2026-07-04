@@ -2,57 +2,63 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>DevArchive 메인</title>
+    <title>DevArchive - 메인 대시보드</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
+<div th:replace="~{fragments/header :: header}"></div>
 
-    <header>
-        <h1>DevArchive</h1>
-        <a href="/logout">로그아웃</a>
-    </header>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><span th:text="${account.username}">유저</span>님 환영합니다!</h3>
+    </div>
 
-    <hr>
-
-    <main>
-        <!-- 기본 유저 정보 섹션 -->
-        <section id="user-info">
-            <h2>사용자 정보</h2>
-            <p><strong>아이디:</strong> <span th:text="${account.username}">아이디</span></p>
-            <p><strong>닉네임:</strong> <span th:text="${account.nickname}">닉네임</span></p>
-            <p><strong>유형:</strong> 
-                <span th:text="${isCompany} ? '기업 회원' : '일반 회원'">회원유형</span>
-            </p>
-        </section>
-
-        <hr>
-
-        <!-- 기능 분기 섹션 -->
-        <section id="menu">
-            <h2>메뉴</h2>
-            
-            <!-- 공통 기능 -->
-            <ul>
-                <li><a href="/job/JobPostList">전체 채용공고 보기</a></li>
-            </ul>
-
-            <!-- 기업 회원 전용 기능 -->
-            <div th:if="${isCompany}">
-                <h3>기업 전용 메뉴</h3>
-                <ul>
-                    <li><a href="/job/JobPostRegister">채용공고 등록하기</a></li>
+    <div class="row">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">마감 임박 채용 공고</h5>
+                
+                <ul class="list-group list-group-flush mt-3" th:if="${not #lists.isEmpty(urgentJobs)}">
+                    <li th:each="job : ${urgentJobs}" class="list-group-item d-flex justify-content-between">
+                        <span th:text="${job.jobPostTitle}">공고 제목</span>
+                        <small class="text-danger fw-bold" th:text="'D-' + ${job.deadline}">D-7</small>
+                    </li>
                 </ul>
-            </div>
 
-            <!-- 일반 회원 전용 기능 -->
-            <div th:unless="${isCompany}">
-                <h3>개인 회원 전용 메뉴</h3>
-                <ul>
-                    <li><a href="/article/ArticleList">내 학습글 관리</a></li>
-                    <li><a href="/job/my-interest">관심 공고 목록</a></li>
-                </ul>
+                <div th:unless="${not #lists.isEmpty(urgentJobs)}" class="mt-4 text-center text-muted">
+                    <p>현재 마감 임박 공고가 없습니다.</p>
+                    <a href="/job/JobPostList" class="btn btn-sm btn-outline-primary">공고 보러가기</a>
+                </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <h5 class="card-title">내 학습 기록</h5>
+                
+                <ul class="list-group list-group-flush mt-3" th:if="${not #lists.isEmpty(recentArticles)}">
+                    <li th:each="article : ${recentArticles}" class="list-group-item">
+                        <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
+                        th:text="${article.title}" class="text-decoration-none text-dark">학습글 제목</a>
+                    </li>
+                </ul>
+
+                <div th:unless="${not #lists.isEmpty(recentArticles)}" class="mt-4 text-center text-muted">
+                    <p>아직 작성한 학습글이 없습니다.</p>
+                    <a href="/article/ArticleRegister" class="btn btn-sm btn-outline-primary">첫 글 작성하기</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <div class="mt-4 text-center">
+        <a href="/schedule" class="btn btn-primary me-2">! 스케줄 보기</a>
+        <a href="/article/InterestJob" class="btn btn-warning">★ 관심 공고 목록</a>
+    </div> -->
+</div>
 
 </body>
 </html>

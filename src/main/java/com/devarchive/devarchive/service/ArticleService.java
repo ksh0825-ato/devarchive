@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,13 @@ public class ArticleService {
     
     public Page<Article> findArticlesByUsername(String username, Pageable pageable) {
         return articleRepository.findByAccount_Username(username, pageable);
+    }
+
+    public List<Article> findRecentArticles(String username) {
+        // createdAt 기준 내림차순(최신순) 정렬, 0페이지에서 5개 가져오기
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));
+        
+        return articleRepository.findByAccount_Username(username, pageable).getContent();
     }
 
     public Page<Article> searchArticles(String username, String keyword, Pageable pageable) {
