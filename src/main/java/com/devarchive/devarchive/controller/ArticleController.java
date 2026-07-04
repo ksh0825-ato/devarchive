@@ -3,7 +3,7 @@ package com.devarchive.devarchive.controller;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TreeSet;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -106,15 +106,27 @@ public class ArticleController {
                                     @PageableDefault(size = 10) Pageable pageable) {
         
         String username = principal.getName();
-        
-        // 컨트롤러 내부 수정: progressList 가져온 직후 중복 제거
+                
         List<StudyProgress> rawList = studyProgressService.getProgressByUsername(username);
 
-        List<StudyProgress> progressList = rawList.stream()
-            .collect(Collectors.collectingAndThen(
-                Collectors.toCollection(() -> new TreeSet<>(Comparator.comparing(p -> p.getJobPost().getId()))),
-                ArrayList::new
-            ));
+        // [중복 제거 핵심] Map의 Key를 jobPost.id로 설정하여 중복을 원천 차단
+        Map<Long, StudyProgress> uniqueMap = new java.util.LinkedHashMap<>();
+        for (StudyProgress p : rawList) {
+            if (p.getJobPost() != null) {
+                // 이미 맵에 같은 공고 ID가 있으면 건너뛰고, 없으면 넣음
+                uniqueMap.putIfAbsent(p.getJobPost().getJobId(), p);
+            }
+        }
+
+        // 중복 제거된 리스트 생성
+        List<StudyProgress> progressList = new ArrayList<>(uniqueMap.values());
+
+
+        // [중간 확인] 로그 찍기
+        System.out.println(">>> 모델에 담기 직전 리스트 사이즈: " + progressList.size());
+        for (StudyProgress p : progressList) {
+            System.out.println(">>> 회사 이름: " + p.getJobPost().getCompanyName());
+        }
 
         System.out.println(">>> 조회된 progressList 크기: " + progressList.size());
         progressList.forEach(p -> System.out.println(">>> 상태 확인: " + p.getStatus()));

@@ -45,13 +45,6 @@
         </div>
     </div>
 
-    <ul class="list-group">
-        <li th:each="progress : ${#sets.toSet(progressList)}" class="list-group-item">
-            <span th:text="${progress.jobPost.companyName}">회사명</span>
-            <span th:text="${progress.status}">상태</span>
-        </li>
-    </ul>
-
     <h1>내 학습 기록</h1>
 
     <!-- 검색창 -->
