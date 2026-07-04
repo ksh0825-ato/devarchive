@@ -49,7 +49,7 @@ public class JobPost {
 
 
     // article 쌍방향 연결
-    @OneToMany(mappedBy = "jobPost", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "jobPost")
     private List<Article> articles = new ArrayList<>();
     
 

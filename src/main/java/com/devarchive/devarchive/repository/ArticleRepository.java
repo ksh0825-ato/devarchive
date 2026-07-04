@@ -29,6 +29,9 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("SELECT j.companyName, COUNT(a) FROM Article a JOIN a.jobPost j WHERE a.account.username = :username GROUP BY j.companyName ORDER BY COUNT(a) DESC")
     List<Object[]> findTopCompanies(@Param("username") String username);
 
+    List<Article> findByJobPost_JobId(Long jobId);
+    // 설명: findBy + JobPost(엔티티의 필드명) + _(경로 구분) + JobPostId(JobPost 엔티티 내의 ID 필드명) 순서
+
     long countByAccount_Username(String username);
     
     @Query("SELECT COUNT(DISTINCT a.jobPost) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")

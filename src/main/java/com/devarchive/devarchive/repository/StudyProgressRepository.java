@@ -27,7 +27,8 @@ public interface StudyProgressRepository extends JpaRepository<StudyProgress, Lo
     @Query("SELECT sp FROM StudyProgress sp JOIN sp.account a WHERE a.username = :username")
     List<StudyProgress> findByAccountUsernameCustom(@Param("username") String username);
 
-    // Account 엔티티 내의 userId 필드를 기준으로 조회
+    List<StudyProgress> findByJobPost_JobId(Long jobId);
+
     List<StudyProgress> findByAccountUserId(Long userId);
 
     boolean existsByAccountAndJobPost(Account account, JobPost jobPost);

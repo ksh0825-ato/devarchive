@@ -17,7 +17,7 @@
         <span th:if="${article.jobPost != null}" 
               th:text="${article.jobPost.companyName} + ' (' + ${article.jobPost.position} + ')'">
         </span>
-        <span th:unless="${article.jobPost != null}">연관된 공고 없음</span>
+        <span th:unless="${article.jobPost != null}">종료된 공고</span>
     </p>
     
     <p><strong>작성일:</strong> <span th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>

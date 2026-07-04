@@ -33,7 +33,8 @@
                     
                     <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(progressList)}">
                         <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between">
-                            <span th:text="${progress.jobPost.companyName}">회사명</span>
+                            <span th:if="${progress.jobPost != null}" th:text="${progress.jobPost.companyName}">회사명</span>
+                            <span th:unless="${progress.jobPost != null}">종료된 공고</span>
                             <span class="badge" 
                                 th:text="${progress.status}"
                                 th:classappend="${progress.status.name() == 'STUDYING' ? 'bg-warning' : 'bg-success'}">

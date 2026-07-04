@@ -7,6 +7,7 @@ import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -28,8 +29,8 @@ public class StudyProgress {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long progressId; // PK
 
-    @ManyToOne
-    @JoinColumn(name = "job_id") // FK
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "job_id", nullable = true) // null이 가능해야 연결을 끊을 수 있습니다.
     private JobPost jobPost;
 
     @ManyToOne

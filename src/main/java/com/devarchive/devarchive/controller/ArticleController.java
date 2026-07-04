@@ -207,7 +207,7 @@ public class ArticleController {
     public String delete(@RequestParam("articleId") Long articleId, Principal principal) {
         // 1. 로그인 여부 확인
         if (principal == null) {
-            return "redirect:/account/login";
+            return "redirect:/";
         }
 
         // 2. principal.getName()으로 실제 username을 가져와 전달

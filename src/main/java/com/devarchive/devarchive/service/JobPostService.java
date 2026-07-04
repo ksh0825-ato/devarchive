@@ -13,12 +13,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.devarchive.devarchive.domain.Account;
+import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.InterestJob;
 import com.devarchive.devarchive.domain.JobPost;
+import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.dto.jobpost.JobPostDto;
 import com.devarchive.devarchive.repository.AccountRepository;
+import com.devarchive.devarchive.repository.ArticleRepository;
 import com.devarchive.devarchive.repository.InterestJobRepository;
 import com.devarchive.devarchive.repository.JobPostRepository;
+import com.devarchive.devarchive.repository.StudyProgressRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,6 +33,8 @@ public class JobPostService {
     private final JobPostRepository jobPostRepository;
     private final AccountRepository accountRepository;
     private final InterestJobRepository interestJobRepository;
+    private final ArticleRepository articleRepository;
+    private final StudyProgressRepository studyProgressRepository;
 
 // 공고 등록을 위한 통합 메서드
     @Transactional
@@ -80,6 +86,11 @@ public class JobPostService {
                 .collect(Collectors.toList());
     }
 
+    // D-DAY 계산
+    public long calculateDDay(LocalDate deadline) {
+        return ChronoUnit.DAYS.between(LocalDate.now(), deadline);
+    }
+
     // 공고 게시글 상세 조회
     public JobPostDto getJobPostById(Long jobId) {
         // 1. repository에서 해당 id의 공고를 찾고, 없으면 예외 발생
@@ -116,9 +127,23 @@ public class JobPostService {
 
     // 채용 공고 삭제
     @Transactional
-        public void deleteJobPost(Long jobId) {
+    public void deleteJobPost(Long jobId) {
+        // 1. 해당 공고를 참조하는 모든 학습글(Article) 찾기
+        List<Article> articles = articleRepository.findByJobPost_JobId(jobId);
+        for (Article article : articles) {
+            article.setJobPost(null); // 연결 해제
+        }
+
+        // 2. 학습 진행 상황(StudyProgress)도 연결 해제
+        List<StudyProgress> progresses = studyProgressRepository.findByJobPost_JobId(jobId);
+        for (StudyProgress progress : progresses) {
+            progress.setJobPost(null); // 연결 해제
+        }
+
+        // 3. 이제 아무것도 참조하지 않으므로 공고만 안전하게 삭제
         jobPostRepository.deleteById(jobId);
     }
+
 
     // jobPost save 메소드
     public void save(JobPost jobPost) {

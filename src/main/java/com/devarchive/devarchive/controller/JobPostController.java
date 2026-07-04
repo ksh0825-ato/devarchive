@@ -108,10 +108,10 @@ public class JobPostController {
 
 
     // 채용 공고 삭제 처리
-    @GetMapping("/JobPostDelete")
-      public String delete(@RequestParam("jobId") Long jobId) {
+    @PostMapping("/JobPostDelete")
+    public String delete(@RequestParam("jobId") Long jobId) {
         jobPostService.deleteJobPost(jobId);
-        return "redirect:/job/JobPostList"; // 삭제 후 목록으로 이동
+        return "redirect:/job/JobPostList";
     }
 
 }

@@ -20,9 +20,15 @@
                 <h5 class="card-title">마감 임박 채용 공고</h5>
                 
                 <ul class="list-group list-group-flush mt-3" th:if="${not #lists.isEmpty(urgentJobs)}">
-                    <li th:each="job : ${urgentJobs}" class="list-group-item d-flex justify-content-between">
+                    <li th:each="job : ${urgentJobs}" class="list-group-item d-flex justify-content-between align-items-center">
                         <span th:text="${job.jobPostTitle}">공고 제목</span>
-                        <small class="text-danger fw-bold" th:text="'D-' + ${job.deadline}">D-7</small>
+                    
+                        <!-- D-DAY 카운트 -->
+                        <span th:with="dday=${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), job.deadline)}"
+                            th:class="${dday <= 3} ? 'badge bg-danger rounded-pill' : 'badge bg-secondary rounded-pill'">        
+                            <th:block th:text="${dday == 0} ? 'D-Day' : 'D-' + ${dday}"></th:block>
+                        </span>
+                        
                     </li>
                 </ul>
 
