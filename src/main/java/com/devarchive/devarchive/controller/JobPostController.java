@@ -2,28 +2,23 @@ package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
 
-import org.hibernate.query.SortDirection;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.dto.jobpost.JobPostDto;
-import com.devarchive.devarchive.repository.JobPostRepository;
 import com.devarchive.devarchive.service.JobPostService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -108,7 +103,7 @@ public class JobPostController {
 
 
     // 채용 공고 삭제 처리
-    @PostMapping("/JobPostDelete")
+    @PostMapping("/job/JobPostDelete")
     public String delete(@RequestParam("jobId") Long jobId) {
         jobPostService.deleteJobPost(jobId);
         return "redirect:/job/JobPostList";

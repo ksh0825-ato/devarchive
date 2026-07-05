@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -75,6 +76,13 @@ public class JobPostService {
         return jobPostRepository.findAll(pageable);
     }
 
+    // 상세 조회 로직
+    @Transactional(readOnly = true)
+    public JobPost findById(Long jobId) {
+        return jobPostRepository.findById(jobId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 구인 공고를 찾을 수 없습니다. id=" + jobId));
+    }
+
     public List<JobPost> findUrgentJobs() {
         return jobPostRepository.findAll().stream()
                 // deadline이 오늘 이후인 공고만 필터링
@@ -99,6 +107,21 @@ public class JobPostService {
         // 2. 조회된 엔티티를 DTO로 변환하여 반환
         return convertToDto(jobPost);
     }
+
+    @Transactional(readOnly = true)
+    public List<JobPost> getJobPostsForDashboard() {
+        Pageable top5 = PageRequest.of(0, 5);
+        List<JobPost> jobs = jobPostRepository.findTop5ByDeadlineAfterOrderByDeadlineAsc(top5);
+        
+        // 만약 마감 임박 공고가 5개 미만이라면 최신 공고로 채움
+        if (jobs.size() < 5) {
+            int countToFill = 5 - jobs.size();
+            List<JobPost> latestJobs = jobPostRepository.findTop5ByOrderByCreatedAtDesc(PageRequest.of(0, countToFill));
+            jobs.addAll(latestJobs);
+        }
+        return jobs;
+    }
+
 
     // DTO 변환 로직 (기존에 작성해두신 toDTO 혹은 비슷한 메서드 활용)
     private JobPostDto convertToDto(JobPost jobPost) {
