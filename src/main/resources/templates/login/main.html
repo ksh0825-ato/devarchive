@@ -10,7 +10,16 @@
 
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3><span th:text="${account.username}">유저</span>님 환영합니다!</h3>
+        <div>
+            <h3>
+                <span th:text="${account.nickname}">닉네임</span>님 환영합니다!
+            </h3>
+            <div class="text-muted">
+                <small>ID: <span th:text="${account.username}">아이디</span></small> 
+                | 
+                <small th:text="${account.role == 'ROLE_COMPANY'} ? '기업 회원' : '일반 회원'">회원 유형</small>
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -21,10 +30,11 @@
                 
                 <ul class="list-group list-group-flush mt-3" th:if="${not #lists.isEmpty(urgentJobs)}">
                     <li th:each="job : ${urgentJobs}" class="list-group-item d-flex justify-content-between align-items-center">
-                            <a th:href="@{/job/JobPostDetail(jobId=${job.jobId})}"
-                            th:text="${job.jobPostTitle}" class="text-decoration-none text-dark">
-                                공고 제목
+                            <a th:href="@{/job/JobPostDetail(jobId=${job.jobId})}" class="text-decoration-none text-dark">
+                                <span th:text="${job.jobPostTitle}">공고 제목</span>
+                                <span class="text-muted" th:text="'| ' + ${job.companyName}">| 기업명</span>
                             </a>
+
                         <!-- D-DAY 카운트 -->
                         <span th:with="dday=${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDate).now(), job.deadline)}"
                             th:class="${dday <= 3} ? 'badge bg-danger rounded-pill' : 'badge bg-secondary rounded-pill'">        
@@ -48,9 +58,25 @@
                 <h5 class="card-title">내 학습 기록</h5>
                 
                 <ul class="list-group list-group-flush mt-3" th:if="${not #lists.isEmpty(recentArticles)}">
-                    <li th:each="article : ${recentArticles}" class="list-group-item">
-                        <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
-                        th:text="${article.title}" class="text-decoration-none text-dark">학습글 제목</a>
+                    <li th:each="article : ${recentArticles}" class="list-group-item border-bottom py-3">
+                        <div>
+                            <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
+                            class="text-decoration-none text-dark fw-bold">
+                            <span th:text="${article.title}">학습글 제목</span>
+                            <span th:if="${article.jobPost != null}" th:text="'| ' + ${article.jobPost.companyName}">| 채용 공고명</span>
+                            </a>
+                        </div>
+                        
+                        <div class="small mt-1">
+                            <a class="text-muted text-decoration-none" 
+                            th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-05</a>
+                            
+                            <a th:each="articleTag : ${article.articleTags}" 
+                            th:href="@{/article/ArticleSearchByTag(tagName=${articleTag.tag.tagName})}" 
+                            class="text-primary text-decoration-underline ms-2">
+                            <span th:text="'#' + ${articleTag.tag.tagName}">#태그명</span>
+                            </a>
+                        </div>
                     </li>
                 </ul>
 

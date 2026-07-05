@@ -21,12 +21,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.domain.Tag;
 import com.devarchive.devarchive.dto.article.ArticleDto;
+import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
+import com.devarchive.devarchive.repository.StudyProgressRepository;
 import com.devarchive.devarchive.service.ArticleService;
 import com.devarchive.devarchive.service.JobPostService;
 import com.devarchive.devarchive.service.StudyProgressService;
@@ -40,6 +43,8 @@ public class ArticleController {
     private final JobPostService jobPostService;
     private final ArticleRepository articleRepository;
     private final StudyProgressService studyProgressService;
+    private final StudyProgressRepository studyProgressRepository;
+    private final AccountRepository accountRepository;
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/ArticleRegister")
@@ -161,12 +166,28 @@ public class ArticleController {
 
     // Article 상세 조회
     @GetMapping("/ArticleDetail/{articleId}")
-    public String articleDetail(@PathVariable("articleId") Long articleId, Model model) {
+    public String articleDetail(@PathVariable("articleId") Long articleId, Model model, Principal principal) {
         Article article = articleService.findById(articleId); 
         List<Tag> tags = articleService.getTagsByArticle(article);
+        
+        // 예외 처리를 포함한 Account 조회
+        Account account = accountRepository.findByUsername(principal.getName())
+                        .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자 정보를 찾을 수 없습니다."));
+
+        // Article이 연관된 JobPost가 있다면 해당 공고에 대한 진행 상황을 조회
+        StudyProgress studyProgress = null;
+            
+        // 1. article이 jobPost를 가지고 있는지 확인 (삭제된 공고인 경우 방지)
+            if (article.getJobPost() != null) {
+                // 2. Repository 메서드 이름을 수정된 것에 맞게 호출
+                studyProgress = studyProgressRepository
+                    .findByAccountUsernameAndJobPost(principal.getName(), article.getJobPost())
+                    .orElse(null); 
+            }
 
         model.addAttribute("article", article);
-        model.addAttribute("tags", tags); 
+        model.addAttribute("tags", tags);
+        model.addAttribute("studyProgress", studyProgress); // 모델에 추가
         return "article/ArticleDetail";
     }
 

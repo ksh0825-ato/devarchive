@@ -1,6 +1,7 @@
 package com.devarchive.devarchive.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -34,4 +35,7 @@ public interface StudyProgressRepository extends JpaRepository<StudyProgress, Lo
     boolean existsByAccountAndJobPost(Account account, JobPost jobPost);
 
     void deleteByAccountAndJobPost(Account account, JobPost jobPost);
+    
+    // 유저의 특정 공고에 대한 학습 진행 상황을 찾음
+    Optional<StudyProgress> findByAccountUsernameAndJobPost(String username, JobPost jobPost);
 }
