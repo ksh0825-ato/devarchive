@@ -1,42 +1,92 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>채용 공고 리스트</title>
+    <meta charset="UTF-8">
+    <title>전체 채용 공고 보기</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-
+<body class="bg-light">
 <div th:replace="~{fragments/header :: header}"></div>
 
-    <h1>공고 목록 조회</h1>
+<div class="container mt-5">
+    <h2 class="fw-bold mb-4">전체 채용 공고 보기</h2>
 
-    <!-- 데이터가 있을 때만 테이블을 보여주도록 수정 -->
-    <table border="1" th:if="${job != null and job.content.size() > 0}">
-        <thead>
+    <div class="card p-3 mb-4 shadow-sm">
+        <div class="mb-3">
+            <input type="text" class="form-control" placeholder="조건 검색">
+        </div>
+        <div class="d-flex gap-3 mb-3">
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="chk1"><label class="form-check-label" for="chk1">관심 기업</label></div>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="chk2"><label class="form-check-label" for="chk2">~D-7</label></div>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="chk3"><label class="form-check-label" for="chk3">~D-14</label></div>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="chk4"><label class="form-check-label" for="chk4">마감 공고 제외</label></div>
+        </div>
+        <div class="row g-2">
+            <div class="col-md-5"><input type="text" class="form-control" placeholder="글 검색창"></div>
+            <div class="col-md-5"><input type="text" class="form-control" placeholder="기업명 검색창"></div>
+            <div class="col-md-2 text-end"><button class="btn btn-outline-secondary w-100">초기화</button></div>
+        </div>
+    </div>
+
+    <table class="table table-hover text-center align-middle shadow-sm bg-white">
+        <thead class="table-light">
             <tr>
+                <th>관심</th>
                 <th>번호</th>
                 <th>제목</th>
-                <th>회사명</th>
-                <th>등록일</th>
-                <th>상세보기</th>
+                <th>기업명</th>
+                <th>모집 직종</th>
+                <th>마감 기한</th>
+                <th>관리</th>
             </tr>
         </thead>
         <tbody>
-            <tr th:each="JobPost : ${job.content}">
-                <td th:text="${JobPost.jobId}"></td>
-                <td th:text="${JobPost.jobPostTitle}"></td>
-                <td th:text="${JobPost.companyName}"></td>
-                <td th:text="${#temporals.format(JobPost.createdAt, 'yyyy-MM-dd')}"></td>
-                <td><a th:href="@{/job/JobPostDetail(jobId=${JobPost.jobId})}">보기</a></td>
+            <tr th:each="jobPost : ${job.content}">
+                <td>☆</td>
+                <td th:text="${jobPost.jobId}"></td>
+
+                <td>
+                    <a th:href="@{/job/JobPostDetail(jobId=${jobPost.jobId})}" th:text="${jobPost.jobPostTitle}" >
+                       th:text="${jobPost.jobPostTitle}">채용 공고 제목</a>
+                </td>
+
+
+                <td th:text="${jobPost.jobPostTitle}"></td>
+                <td th:text="${jobPost.companyName}"></td>
+                
+                <td th:if="${jobPost.deadline != null}" 
+                    th:with="daysDiff=${T(java.time.temporal.ChronoUnit).DAYS.between(today, jobPost.deadline)}">
+                    
+                    <span th:if="${daysDiff > 0}" th:text="'D-' + ${daysDiff}" class="text-primary"></span>
+                    <span th:if="${daysDiff == 0}" class="text-danger fw-bold">D-DAY</span>
+                    <span th:if="${daysDiff < 0}" class="text-muted">마감</span>
+                </td>
+                                
+                <td>
+                    <a th:href="@{/job/JobPostUpdate(jobId=${jobPost.jobId})}" 
+                    class="btn btn-outline-secondary btn-sm me-2">수정</a>
+                    <a th:href="@{/job/JobPostDelete(jobId=${jobPost.jobId})}" 
+                    class="btn btn-outline-danger btn-sm"
+                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                </td>
             </tr>
         </tbody>
     </table>
 
-    <!-- 데이터가 없을 때 메시지 표시 -->
-    <p th:if="${job == null or job.content.size() == 0}">등록된 공고가 없습니다.</p>
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item"><a class="page-link" href="#">&lt;</a></li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">2</a></li>
+            <li class="page-item"><a class="page-link" href="#">3</a></li>
+            <li class="page-item"><a class="page-link" href="#">&gt;</a></li>
+        </ul>
+    </nav>
 
-    <a th:href="@{/job/JobPostRegister}">글쓰기</a>
+    <div class="text-end">
+        <a th:href="@{/job/JobPostRegister}" class="btn btn-success">글쓰기</a>
+    </div>
+</div>
 
 </body>
 </html>

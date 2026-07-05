@@ -2,45 +2,47 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>기사(공부 기록) 작성</title>
+    <title>학습 기록 작성</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    
-<div th:replace="~{fragments/header :: header}"></div>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-sm p-4">
+            <h2 class="fw-bold mb-4">학습 기록 작성</h2>
+            
+            <form th:action="@{/article/ArticleRegister}" th:object="${articleDto}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">제목</label>
+                    <input type="text" th:field="*{title}" class="form-control" placeholder="제목을 입력하세요" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">관련 채용 공고 선택</label>
+                    <select th:field="*{jobId}" class="form-select">
+                        <option value="">-- 공고를 선택하세요 --</option>
+                        <option th:each="job : ${jobPosts}" 
+                                th:value="${job.jobId}" 
+                                th:text="${job.companyName + ' (' + job.position + ')'}">
+                        </option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">본문</label>
+                    <textarea th:field="*{content}" class="form-control" rows="10" placeholder="학습 내용을 기록하세요" required></textarea>
+                </div>
 
-<!-- th:object는 모델에 담긴 DTO 객체명을 그대로 사용합니다 -->
-<form th:action="@{/article/ArticleRegister}" th:object="${articleDto}" method="post">
-    
-    <p>
-        <label>제목:</label><br>
-        <input type="text" th:field="*{title}" placeholder="제목 입력" required>
-    </p>
-    
-    <p>
-        <label>관련 채용 공고 선택:</label><br>
-        <!-- th:field="*{jobId}"를 사용하면 DTO의 jobId 필드와 자동으로 바인딩됩니다 -->
-        <select th:field="*{jobId}">
-            <option value="">-- 공고 선택 --</option>
-            <option th:each="job : ${jobPosts}" 
-                    th:value="${job.jobId}" 
-                    th:text="${job.companyName + ' (' + job.position + ')'}">
-            </option>
-        </select>
-    </p>
-    
-    <p>
-        <label>본문:</label><br>
-        <textarea th:field="*{content}" placeholder="학습 내용 기록" required></textarea>
-    </p>
-
-    <div>
-        <label>태그 (콤마로 구분):</label>
-        <input type="text" name="tagNames" placeholder="예: Java,SpringBoot,JPA">
+                <div class="mb-4">
+                    <label class="form-label fw-bold">태그 (콤마로 구분)</label>
+                    <input type="text" name="tagNames" class="form-control" placeholder="예: Java,SpringBoot,JPA">
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                    <a th:href="@{/article/ArticleList}" class="btn btn-outline-secondary me-2">취소</a>
+                    <button type="submit" class="btn btn-primary">등록하기</button>
+                </div>
+            </form>
+        </div>
     </div>
-    
-    <button type="submit">등록</button>
-</form>
-
 </body>
 </html>
