@@ -46,8 +46,8 @@
                 <td th:text="${jobPost.jobId}"></td>
 
                 <td>
-                    <a th:href="@{/job/JobPostDetail(jobId=${jobPost.jobId})}" th:text="${jobPost.jobPostTitle}" >
-                       th:text="${jobPost.jobPostTitle}">채용 공고 제목</a>
+                    <a th:href="@{/job/JobPostDetail(jobId=${jobPost.jobId})}" th:text="${jobPost.jobPostTitle}"
+                        class="text-decoration-none text-dark">채용 공고 제목</a>
                 </td>
 
 
@@ -57,9 +57,17 @@
                 <td th:if="${jobPost.deadline != null}" 
                     th:with="daysDiff=${T(java.time.temporal.ChronoUnit).DAYS.between(today, jobPost.deadline)}">
                     
-                    <span th:if="${daysDiff > 0}" th:text="'D-' + ${daysDiff}" class="text-primary"></span>
+                    <!-- D-1 ~ D-5 까지 붉은색 + 볼드체 -->
+                    <span th:if="${daysDiff > 0 and daysDiff <= 5}" th:text="'D-' + ${daysDiff}" class="text-danger fw-bold"></span>
+                    
+                    <!-- D-6 이상은 파란색 + 볼드체 -->
+                    <span th:if="${daysDiff > 5}" th:text="'D-' + ${daysDiff}" class="text-primary fw-bold"></span>
+                    
+                    <!-- D-DAY는 붉은색 + 볼드체 -->
                     <span th:if="${daysDiff == 0}" class="text-danger fw-bold">D-DAY</span>
-                    <span th:if="${daysDiff < 0}" class="text-muted">마감</span>
+                    
+                    <!-- 마감일 경우 회색 -->
+                    <span th:if="${daysDiff < 0}" class="text-muted fw-bold">마감</span>
                 </td>
                                 
                 <td>

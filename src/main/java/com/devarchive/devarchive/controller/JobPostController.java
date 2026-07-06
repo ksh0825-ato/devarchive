@@ -83,6 +83,7 @@ public class JobPostController {
         
         // 모델에 담아서 화면으로 전달
         model.addAttribute("job", jobPostDto);
+        model.addAttribute("today", java.time.LocalDate.now());
         
         return "job/JobPostDetail"; // 상세 페이지 HTML 경로
     }
