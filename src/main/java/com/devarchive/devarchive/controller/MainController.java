@@ -3,9 +3,6 @@ package com.devarchive.devarchive.controller;
 import java.util.Collections;
 import java.util.List;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -46,8 +43,10 @@ public class MainController {
                 // 페이지네이션 없이 전체를 리스트로 가져오기
                 List<Article> myArticles = articleService.findAllByUsername(username);
                 model.addAttribute("articleList", myArticles); 
+                // 데이터가 null일 경우를 대비해 빈 리스트를 전달
+                model.addAttribute("articleList", myArticles != null ? myArticles : Collections.emptyList());
             } else {
-                model.addAttribute("articleList", Collections.emptyList());
+                model.addAttribute("articleList", Collections.emptyList()); // 빈 리스트 명시
         }
         
         // 공고는 전체를 보여주어도 무방하다면 그대로 둡니다.

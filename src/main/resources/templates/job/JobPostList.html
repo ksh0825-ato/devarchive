@@ -50,9 +50,8 @@
                         class="text-decoration-none text-dark">채용 공고 제목</a>
                 </td>
 
-
-                <td th:text="${jobPost.jobPostTitle}"></td>
                 <td th:text="${jobPost.companyName}"></td>
+                <td th:text="${jobPost.position}"></td>
                 
                 <td th:if="${jobPost.deadline != null}" 
                     th:with="daysDiff=${T(java.time.temporal.ChronoUnit).DAYS.between(today, jobPost.deadline)}">
@@ -81,14 +80,24 @@
         </tbody>
     </table>
 
-    <!-- 페이징 기능 ArticleList에 맞춰서 통일하기 -->
-    <nav aria-label="Page navigation">
+    <nav aria-label="Page navigation" class="mt-4" th:if="${job.totalPages > 0}">
         <ul class="pagination justify-content-center">
-            <li class="page-item"><a class="page-link" href="#">&lt;</a></li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">2</a></li>
-            <li class="page-item"><a class="page-link" href="#">3</a></li>
-            <li class="page-item"><a class="page-link" href="#">&gt;</a></li>
+            <li class="page-item" th:classappend="${job.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/job/JobPostList(page=${job.number - 1})}">이전</a>
+            </li>
+
+            <li class="page-item" 
+                th:each="pageNumber : ${#numbers.sequence(
+                    (job.number - 2 < 0 ? 0 : job.number - 2), 
+                    (job.number + 2 >= job.totalPages ? (job.totalPages == 0 ? 0 : job.totalPages - 1) : job.number + 2)
+                )}"
+                th:classappend="${pageNumber == job.number} ? 'active'">
+                <a class="page-link" th:text="${pageNumber + 1}" th:href="@{/job/JobPostList(page=${pageNumber})}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${job.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/job/JobPostList(page=${job.number + 1})}">다음</a>
+            </li>
         </ul>
     </nav>
 
