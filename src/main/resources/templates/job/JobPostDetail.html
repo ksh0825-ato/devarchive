@@ -13,7 +13,7 @@
 
         <div class="mb-4">
                 <div class="d-flex align-items-center mb-3">
-                    <h2 class="fw-bold m-0 me-3">
+                    <h2 class="fw-bold me-3">
                         <span class="text-warning">★</span> 
                         <span th:text="${job.jobPostTitle}">채용 공고 타이틀</span>
                     </h2>
@@ -50,6 +50,7 @@
                     <span th:if="${daysDiff < 0}" class="text-muted fw-bold fs-4">마감</span>
                     
                     <span class="text-muted ms-1" th:text="'(' + ${#temporals.format(job.deadline, 'yyyy-MM-dd')} + ')'"></span>
+
                 </div>
                 
                 <a href="#" class="btn btn-sm btn-outline-success">학습 시작</a>
