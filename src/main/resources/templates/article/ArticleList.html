@@ -2,113 +2,93 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>내 학습 기록 목록</title>
-    <style>
-        .search-area { margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f4f4f4; }
-    </style>
+    <title>학습 기록 목록</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
-    
+<body class="bg-light">
+
 <div th:replace="~{fragments/header :: header}"></div>
 
-    <div class="container my-4">
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card p-3 shadow-sm">
-                    <h5>학습 통계</h5>
-                    <p>
-                        총 학습 기록: <span th:text="${totalArticles}">0</span>건 | 
-                        분석 중인 공고: <span th:text="${studyingCount}">0</span>개
-                    </p>
-                </div>
-            </div>
+<div class="container mt-5">
+    <h2 class="fw-bold mb-4">내 학습 기록</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card p-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3">학습 통계</h5>
+            <p class="mb-1">총 학습 기록: <span th:text="${totalArticles}">0</span>건</p>
+            <p class="mb-0">분석 중인 공고: <span th:text="${studyingCount}">0</span>개</p>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card p-4 shadow-sm h-100">
+            <h5 class="fw-bold mb-3">진행 중인 채용공고</h5>
             
-            <div class="col-md-8">
-                <div class="card p-3 shadow-sm">
-                    <h5>진행 중인 채용공고</h5>
-                    
-                    <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(progressList)}">
-                        <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between">
-                            <span th:if="${progress.jobPost != null}" th:text="${progress.jobPost.companyName}">회사명</span>
-                            <span th:unless="${progress.jobPost != null}">종료된 공고</span>
-                            <span class="badge" 
-                                th:text="${progress.status}"
-                                th:classappend="${progress.status.name() == 'STUDYING' ? 'bg-warning' : 'bg-success'}">
-                            </span>
-                        </li>
-                    </ul>
-                    
-                    <div th:unless="${not #lists.isEmpty(progressList)}" class="text-center p-3 text-muted">
-                        진행 중인 공고가 없습니다.
+            <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(progressList)}">
+                <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                    <div>
+                        <span class="fw-bold" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.companyName}">회사명</span>
+                        <span class="text-muted" th:unless="${progress.jobPost != null}">종료된 공고</span>
                     </div>
-                </div>
-        </div>
-    </div>
-
-    <h1>내 학습 기록</h1>
-
-    <!-- 검색창 -->
-    <div class="search-area">
-        <form th:action="@{/article/ArticleList}" method="post">
-            <input type="text" name="keyword" th:value="${keyword}" placeholder="검색어 입력">
-            <button type="submit">검색</button>
-            <a th:href="@{/article/ArticleList}">초기화</a>
-        </form>
-    </div>
-
-    <div class="container my-4">
-    <div class="d-flex justify-content-end">
-            <form th:action="@{/article/ArticleSearchByTag}" method="get" class="d-flex">
-                <input type="text" name="tagName" class="form-control me-2" placeholder="태그 입력 (예: Spring)" required>
-                <button type="submit" class="btn btn-outline-primary">검색</button>
-            </form>
-        </div>
-    </div>
-
-    <br>
-
-    <!-- 목록 테이블 -->
-    <table>
-        <thead>
-            <tr>
-                <th>번호</th>
-                <th>제목</th>
-                <th>관련 공고</th>
-                <th>작성일</th>
-                <th>관리</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="article : ${articlePage.content}">
-                <td th:text="${article.articleId}">1</td>
-                <td>
-                    <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" th:text="${article.title}" >
-                       th:text="${article.title}">학습 기록 제목</a>
-                </td>
-                <td>
-                    <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
-                    <span th:unless="${article.jobPost != null}">-</span>
-                </td>
-                <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>
-                <td>
-                    <!-- 수정 버튼 -->
-                    <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}">수정하기</a>
                     
-                    <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
-                    class="btn btn-danger"
-                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-
-    <div style="margin-top: 20px;">
-        <a th:href="@{/article/ArticleRegister}">글쓰기</a>
+                    <span class="badge" 
+                          th:text="${progress.status.name() == 'STUDYING' ? '학습 중' : (progress.status.name() == 'COMPLETED' ? '완료' : '시작 전')}"
+                          th:classappend="${progress.status.name() == 'STUDYING' ? 'bg-warning text-dark' : 'bg-success'}">
+                    </span>
+                </li>
+            </ul>
+            
+            <p th:if="${#lists.isEmpty(progressList)}" class="text-muted mt-2">진행 중인 공고가 없습니다.</p>
+        </div>
     </div>
+</div>
+
+    <div class="card shadow-sm">
+        <table class="table table-hover text-center align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>번호</th>
+                    <th>제목</th>
+                    <th>관련 공고</th>
+                    <th>작성일</th>
+                    <th>관리</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="article : ${articlePage.content}">
+                    <td th:text="${article.articleId}">1</td>
+                    <td class="text-start">
+                        <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
+                           th:text="${article.title}" class="text-decoration-none text-dark">제목</a>
+                    </td>
+                    <td>
+                        <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
+                        <span th:unless="${article.jobPost != null}" class="text-muted">-</span>
+                    </td>
+                    <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-06</td>
+                    <td>
+                        <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}" class="btn btn-outline-secondary btn-sm me-2">수정</a>
+                        <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="mt-4" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item"><a class="page-link" href="#">이전</a></li>
+            <li class="page-item active"><a class="page-link" href="#">1</a></li>
+            <li class="page-item"><a class="page-link" href="#">다음</a></li>
+        </ul>
+    </nav>
+    
+    <div class="text-end mt-3">
+        <a th:href="@{/article/ArticleRegister}" class="btn btn-primary">글쓰기</a>
+    </div>
+</div>
 
 </body>
 </html>
