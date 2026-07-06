@@ -14,6 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
@@ -63,4 +65,8 @@ public class JobPost {
         this.deadline = deadline;
 
     }
+    
+    @ManyToMany
+    @JoinTable(name = "job_post_skill")
+    private List<Skill> skills = new ArrayList<>();
 }

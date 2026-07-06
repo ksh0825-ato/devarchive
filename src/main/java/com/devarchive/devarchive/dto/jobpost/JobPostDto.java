@@ -3,6 +3,8 @@ package com.devarchive.devarchive.dto.jobpost;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -33,6 +35,8 @@ public class JobPostDto {
     
     @DateTimeFormat(pattern = "yyyy-MM-dd") // 이 부분을 추가하세요
     private LocalDate deadline; // 마감일
+
+    private List<Long> skills = new ArrayList<>();
 
     @CreationTimestamp
     private LocalDateTime createdAt; // 공고 작성 시간

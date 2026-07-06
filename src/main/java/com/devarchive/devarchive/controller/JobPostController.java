@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.dto.jobpost.JobPostDto;
+import com.devarchive.devarchive.dto.jobpost.JobPostForm;
 import com.devarchive.devarchive.repository.JobPostRepository;
+import com.devarchive.devarchive.repository.SkillRepository;
 import com.devarchive.devarchive.service.JobPostService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,9 +29,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/job")
 public class JobPostController {
+    
     // 1. private final로 선언
     private final JobPostService jobPostService;
     private final JobPostRepository jobPostRepository;
+    private final SkillRepository skillRepository;
 
     // 공고 목록 조회
     @GetMapping("/JobPostList")
@@ -48,12 +52,13 @@ public class JobPostController {
 
     // 공고 등록 페이지
     @GetMapping("/JobPostRegister")
-    public void jobPostRegisterForm(Model model) {
-      
+    public String jobPostRegisterForm(Model model) { // void -> String으로 변경
+        model.addAttribute("allSkills", skillRepository.findAll()); // 모든 스킬 목록 조회
+        model.addAttribute("jobPostForm", new JobPostForm());
+        return "job/JobPostRegister";
     }
 
     // 공고 등록 처리
-    // 게시글 등록 처리
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostRegister")
     public String jobPostRegister(@ModelAttribute JobPostDto jobPostDto, Model model, Principal principal, Pageable pageable) {

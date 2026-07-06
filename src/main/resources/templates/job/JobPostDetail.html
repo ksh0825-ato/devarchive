@@ -14,13 +14,13 @@
         <div class="mb-4">
                 <div class="d-flex align-items-center mb-3">
                     <h2 class="fw-bold me-3">
-                        <span class="text-warning">★</span> 
+                        <span class="text-warning">☆</span> 
                         <span th:text="${job.jobPostTitle}">채용 공고 타이틀</span>
                     </h2>
                     
                     <div class="d-flex align-items-center">
                         <span class="text-muted fw-bold me-3" th:text="'회사명 | ' + ${job.companyName}">회사명 | (회사명)</span>
-                        <a href="#" class="btn btn-sm btn-outline-success">학습 시작</a>
+                        <a th:href="@{/article/ArticleRegister}" class="btn btn-success">학습 시작</a>
                     </div>
                 </div>
                 
@@ -52,15 +52,18 @@
                     <span class="text-muted ms-1" th:text="'(' + ${#temporals.format(job.deadline, 'yyyy-MM-dd')} + ')'"></span>
 
                 </div>
-                
-                <a href="#" class="btn btn-sm btn-outline-success">학습 시작</a>
             </div>
 
                 <br>
 
                 <div class="bg-light p-3 border rounded mb-4">
-                    <strong>사용 언어 :</strong> JAVA, MySQL, ... (태그 정보)
+                    <strong>사용 언어 :</strong>
+                    <span th:if="${#lists.isEmpty(job.skills)}" class="text-muted">등록된 기술 없음</span>
+                    <span th:each="skill : ${job.skills}" 
+                        class="badge bg-primary me-1" 
+                        th:text="${skill.name}">JAVA</span>
                 </div>
+                
               </div>
 
                 <div class="mt-2" style="min-height: 300px;">

@@ -17,12 +17,15 @@ import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.InterestJob;
 import com.devarchive.devarchive.domain.JobPost;
+import com.devarchive.devarchive.domain.Skill;
 import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.dto.jobpost.JobPostDto;
+import com.devarchive.devarchive.dto.jobpost.JobPostForm;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
 import com.devarchive.devarchive.repository.InterestJobRepository;
 import com.devarchive.devarchive.repository.JobPostRepository;
+import com.devarchive.devarchive.repository.SkillRepository;
 import com.devarchive.devarchive.repository.StudyProgressRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -36,6 +39,7 @@ public class JobPostService {
     private final InterestJobRepository interestJobRepository;
     private final ArticleRepository articleRepository;
     private final StudyProgressRepository studyProgressRepository;
+    private final SkillRepository skillRepository;
 
 // 공고 등록을 위한 통합 메서드
     @Transactional
@@ -56,6 +60,11 @@ public class JobPostService {
                 .url(dto.getUrl())
                 .deadline(dto.getDeadline())
                 .build();
+
+            if (dto.getSkills() != null && !dto.getSkills().isEmpty()) {
+                List<Skill> selectedSkills = skillRepository.findAllById(dto.getSkills());
+                jobPost.setSkills(selectedSkills);
+            }
 
         jobPostRepository.save(jobPost);
         System.out.println("저장 완료! (연결된 유저: " + account.getUsername() + ")");
@@ -175,6 +184,13 @@ public class JobPostService {
 
     // jobPost save 메소드
     public void save(JobPost jobPost) {
+        JobPostForm form = new JobPostForm();
+        // 1. form 데이터를 jobPost에 세팅 (생략)
+        
+        // 2. 선택된 Skill ID들로 엔티티 조회 후 연결
+        List<Skill> selectedSkills = skillRepository.findAllById(form.getSkills());
+        jobPost.setSkills(selectedSkills);
+
         jobPostRepository.save(jobPost);
     }
 
