@@ -122,6 +122,12 @@ public class ArticleService {
         saveTagsForArticle(article, tagNames);
     }
 
+    public List<Article> findAll() {
+        // 2. 클래스 이름(ArticleRepository)이 아니라 
+        // 1번에서 선언한 변수명(articleRepository)으로 호출합니다.
+        return articleRepository.findAll();
+    }
+    
     @Transactional
     public void deleteArticle(Long articleId, String username) {
         Article article = articleRepository.findById(articleId)

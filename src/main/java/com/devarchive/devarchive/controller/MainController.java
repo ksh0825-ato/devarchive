@@ -39,9 +39,9 @@ public class MainController {
             boolean isCompany = account.getRole() != null && account.getRole().contains("COMPANY");
             model.addAttribute("isCompany", isCompany);
 
-            // 4. 대시보드 데이터 추가
-            model.addAttribute("urgentJobs", jobPostService.findUrgentJobs());
-            model.addAttribute("recentArticles", articleService.findRecentArticles(userDetails.getUsername()));
+            // 전체 데이터를 가져오도록 수정
+                model.addAttribute("jobList", jobPostService.findAll()); 
+                model.addAttribute("articleList", articleService.findAll());
 
             // 5. 뷰 반환 (기존 login/main 위치라면 그대로 유지)
             return "login/main"; 

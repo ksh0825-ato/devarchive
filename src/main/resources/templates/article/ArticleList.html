@@ -25,26 +25,31 @@
         <div class="card p-4 shadow-sm h-100">
             <h5 class="fw-bold mb-3">진행 중인 채용공고</h5>
             
-            <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(progressList)}">
-                <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
-                    <div>
-                        <span class="fw-bold" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.companyName}">회사명</span>
-                        <span class="text-muted" th:unless="${progress.jobPost != null}">종료된 공고</span>
-                    </div>
-                    
-                    <span class="badge" 
-                          th:text="${progress.status.name() == 'STUDYING' ? '학습 중' : (progress.status.name() == 'COMPLETED' ? '완료' : '시작 전')}"
-                          th:classappend="${progress.status.name() == 'STUDYING' ? 'bg-warning text-dark' : 'bg-success'}">
-                    </span>
-                </li>
-            </ul>
+            <div style="max-height: 150px; overflow-y: auto;">
+                <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(progressList)}">
+                    <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
+                        <div>
+                            <span class="fw-bold" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.companyName}">회사명</span>
+                            <span class="fw-bold" th:unless="${progress.jobPost != null}">종료된 공고</span>
+                        </div>
+                        
+                        <span class="badge" 
+                            th:with="statusName=${progress.status.name()}"
+                            th:text="${progress.jobPost == null ? '종료' : 
+                                            (statusName == 'STUDYING' ? '학습 중' : 
+                                            (statusName == 'COMPLETED' ? '완료' : '시작 전'))}"
+                            th:classappend="${progress.jobPost == null ? 'bg-secondary' : 
+                                                (statusName == 'STUDYING' ? 'bg-warning text-dark' : 'bg-success')}">
+                        </span>
+                    </li>
+                </ul>
+            </div>
             
             <p th:if="${#lists.isEmpty(progressList)}" class="text-muted mt-2">진행 중인 공고가 없습니다.</p>
         </div>
     </div>
-</div>
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm p-4 mt-4">
         <table class="table table-hover text-center align-middle mb-0">
             <thead class="table-light">
                 <tr>

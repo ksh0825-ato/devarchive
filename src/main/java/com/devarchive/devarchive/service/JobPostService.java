@@ -82,7 +82,12 @@ public class JobPostService {
         return jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 구인 공고를 찾을 수 없습니다. id=" + jobId));
     }
-
+    
+    // 모든 채용 공고를 리스트로 조회하는 메서드
+    public List<JobPost> findAll() {
+        return jobPostRepository.findAll();
+    }
+        
     public List<JobPost> findUrgentJobs() {
         return jobPostRepository.findAll().stream()
                 // deadline이 오늘 이후인 공고만 필터링
