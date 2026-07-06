@@ -36,25 +36,25 @@
                 th:with="daysDiff=${T(java.time.temporal.ChronoUnit).DAYS.between(today, job.deadline)}">
                 
                 <div>
-                    <strong class="text-secondary">마감 기간 | </strong>
+                    <strong class="text-danger">마감 기간 | </strong>
                     
                     <!-- D-5 이내 또는 D-DAY인 경우 (붉은색 + 볼드체) -->
-                    <span th:if="${daysDiff >= 0 and daysDiff <= 5}" class="text-danger fw-bold">
+                    <span th:if="${daysDiff >= 0 and daysDiff <= 5}" class="text-danger fw-bold fs-4">
                         <span th:text="${daysDiff == 0 ? 'D-DAY' : 'D-' + daysDiff}"></span>
                     </span>
                     
                     <!-- D-6 이상인 경우 (파란색 + 볼드체) -->
-                    <span th:if="${daysDiff > 5}" class="text-primary fw-bold" th:text="'D-' + ${daysDiff}"></span>
+                    <span th:if="${daysDiff > 5}" class="text-primary fw-bold fs-4" th:text="'D-' + ${daysDiff}"></span>
                     
                     <!-- 마감된 경우 -->
-                    <span th:if="${daysDiff < 0}" class="text-muted fw-bold">마감</span>
+                    <span th:if="${daysDiff < 0}" class="text-muted fw-bold fs-4">마감</span>
                     
                     <span class="text-muted ms-1" th:text="'(' + ${#temporals.format(job.deadline, 'yyyy-MM-dd')} + ')'"></span>
                 </div>
                 
                 <a href="#" class="btn btn-sm btn-outline-success">학습 시작</a>
             </div>
-            
+
                 <br>
 
                 <div class="bg-light p-3 border rounded mb-4">

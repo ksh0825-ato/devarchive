@@ -5,45 +5,54 @@
     <title>채용 공고 수정</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
     <div th:replace="~{fragments/header :: header}"></div>
 
-    <h1>공고 수정</h1>
+    <div class="container mt-5">
+        <div class="card shadow-sm p-4">
+            <h2 class="fw-bold mb-4">채용 공고 수정</h2>
 
-    <!-- 수정 처리 요청을 보낼 폼 -->
-    <form th:action="@{/job/JobPostUpdate}" method="post">
-        
-        <!-- 수정할 글의 ID를 숨겨서 전달 -->
-        <input type="hidden" name="jobId" th:value="${job.jobId}">
+            <form th:action="@{/job/JobPostUpdate}" method="post">
+                
+                <input type="hidden" name="jobId" th:value="${job.jobId}">
 
-        <p>
-            <label>제목:</label><br>
-            <input type="text" name="jobPostTitle" th:value="${job.jobPostTitle}" required>
-        </p>
-        <p>
-            <label>회사명:</label><br>
-            <input type="text" name="companyName" th:value="${job.companyName}" required>
-        </p>
-        <p>
-            <label>직무:</label><br>
-            <input type="text" name="position" th:value="${job.position}" required>
-        </p>
-        <p>
-            <label>설명:</label><br>
-            <textarea name="description" th:text="${job.description}" required></textarea>
-        </p>
-        <p>
-            <label>URL:</label><br>
-            <input type="text" name="url" th:value="${job.url}">
-        </p>
-        <p>
-            <label>마감일:</label><br>
-            <!-- 날짜 포맷 주의: HTML date input은 yyyy-MM-dd 형식을 요구함 -->
-            <input type="date" name="deadline" th:value="${#temporals.format(job.deadline, 'yyyy-MM-dd')}">
-        </p>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">제목</label>
+                    <input type="text" name="jobPostTitle" class="form-control" th:value="${job.jobPostTitle}" required>
+                </div>
 
-        <button type="submit">수정 완료</button>
-        <a th:href="@{/job/JobPostDetail(jobId=${job.jobId})}">취소</a>
-    </form>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">회사명</label>
+                        <input type="text" name="companyName" class="form-control" th:value="${job.companyName}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label fw-bold">직무</label>
+                        <input type="text" name="position" class="form-control" th:value="${job.position}" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">URL</label>
+                    <input type="text" name="url" class="form-control" th:value="${job.url}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">마감일</label>
+                    <input type="date" name="deadline" class="form-control" th:value="${#temporals.format(job.deadline, 'yyyy-MM-dd')}">
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">설명</label>
+                    <textarea name="description" class="form-control" rows="8" th:text="${job.description}" required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <a th:href="@{/job/JobPostDetail(jobId=${job.jobId})}" class="btn btn-outline-secondary me-2">취소</a>
+                    <button type="submit" class="btn btn-primary">수정 완료</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
