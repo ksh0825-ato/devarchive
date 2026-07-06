@@ -43,6 +43,10 @@ public class ArticleService {
         return articleRepository.findByAccount_Username(username, pageable);
     }
 
+    public List<Article> findAllByUsername(String username){
+        return articleRepository.findByAccount_Username(username);
+    }
+
     public List<Article> findRecentArticles(String username) {
         // createdAt 기준 내림차순(최신순) 정렬, 0페이지에서 5개 가져오기
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "createdAt"));

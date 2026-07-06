@@ -17,8 +17,12 @@ import com.devarchive.devarchive.domain.JobPost;
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
     
+    // 1. 페이징용 (목록 페이지에서 사용)
     @Query("SELECT a FROM Article a WHERE a.account.username = :username")
     Page<Article> findByAccount_Username(@Param("username") String username, Pageable pageable);
+
+    // 2. 전체 조회용 (메인 페이지 대시보드 카드에서 사용)
+    List<Article> findByAccount_Username(String username);
 
     @Query("SELECT a FROM Article a WHERE a.account.username = :username AND a.title LIKE %:keyword%")
     Page<Article> findByAccount_UsernameAndTitleContaining(@Param("username") String username, @Param("keyword") String keyword, Pageable pageable);

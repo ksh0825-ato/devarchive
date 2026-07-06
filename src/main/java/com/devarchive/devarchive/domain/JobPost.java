@@ -56,15 +56,16 @@ public class JobPost {
     
 
     // update 메서드(채용 공고 수정)
-    public void update(String title, String companyName, String position, String description, String url, LocalDate deadline) {
+    // Dto는 데이터를 담는 그릇일 뿐, 로직을 수행하는 객체가 아니기 때문에 이 메서드는 엔티티에 있어야 함
+    public void update(String title, String company, String position, String desc, String url, LocalDate deadline) {
         this.jobPostTitle = title;
-        this.companyName = companyName;
+        this.companyName = company;
         this.position = position;
-        this.description = description;
+        this.description = desc;
         this.url = url;
         this.deadline = deadline;
-
     }
+    
     
     @ManyToMany
     @JoinTable(name = "job_post_skill")

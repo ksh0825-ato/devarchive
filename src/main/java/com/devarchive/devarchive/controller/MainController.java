@@ -1,20 +1,24 @@
 package com.devarchive.devarchive.controller;
 
-import com.devarchive.devarchive.domain.Account;
-import com.devarchive.devarchive.repository.AccountRepository;
-import com.devarchive.devarchive.service.ArticleService;
-import com.devarchive.devarchive.service.JobPostService;
+import java.util.Collections;
+import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-import java.security.Principal;
+import com.devarchive.devarchive.domain.Account;
+import com.devarchive.devarchive.domain.Article;
+import com.devarchive.devarchive.repository.AccountRepository;
+import com.devarchive.devarchive.service.ArticleService;
+import com.devarchive.devarchive.service.JobPostService;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import lombok.RequiredArgsConstructor;
 @Controller
 @RequiredArgsConstructor
 public class MainController {
@@ -23,27 +27,32 @@ public class MainController {
     private final JobPostService jobPostService;
     private final ArticleService articleService;
 
-    @GetMapping("/")
-        public String index(@AuthenticationPrincipal UserDetails userDetails, Model model) {
-            // 1. 비로그인 상태일 경우 로그인 페이지로 이동
-            if (userDetails == null) {
-                return "redirect:/account/login";
-            }
-
-            // 2. 로그인된 사용자 정보 조회
-            Account account = accountRepository.findByUsername(userDetails.getUsername())
-                    .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-
-            // 3. 모델에 기본 정보 추가
-            model.addAttribute("account", account);
-            boolean isCompany = account.getRole() != null && account.getRole().contains("COMPANY");
-            model.addAttribute("isCompany", isCompany);
-
-            // 전체 데이터를 가져오도록 수정
-                model.addAttribute("jobList", jobPostService.findAll()); 
-                model.addAttribute("articleList", articleService.findAll());
-
-            // 5. 뷰 반환 (기존 login/main 위치라면 그대로 유지)
-            return "login/main"; 
+   @GetMapping("/")
+    public String index(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        if (userDetails == null) {
+            return "redirect:/account/login";
         }
+
+        Account account = accountRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+        model.addAttribute("account", account);
+        boolean isCompany = account.getRole() != null && account.getRole().contains("COMPANY");
+        model.addAttribute("isCompany", isCompany);
+
+        // 1. 기업 사용자가 아닐 때만 학습글 조회
+        if (!isCompany) {
+                String username = userDetails.getUsername();
+                // 페이지네이션 없이 전체를 리스트로 가져오기
+                List<Article> myArticles = articleService.findAllByUsername(username);
+                model.addAttribute("articleList", myArticles); 
+            } else {
+                model.addAttribute("articleList", Collections.emptyList());
+        }
+        
+        // 공고는 전체를 보여주어도 무방하다면 그대로 둡니다.
+        model.addAttribute("jobList", jobPostService.findAll()); 
+
+        return "login/main"; 
     }
+}

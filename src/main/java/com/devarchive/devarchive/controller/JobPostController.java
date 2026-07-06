@@ -2,6 +2,7 @@ package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.devarchive.devarchive.domain.JobPost;
+import com.devarchive.devarchive.domain.Skill;
 import com.devarchive.devarchive.dto.jobpost.JobPostDto;
 import com.devarchive.devarchive.dto.jobpost.JobPostForm;
 import com.devarchive.devarchive.repository.JobPostRepository;
@@ -82,12 +84,18 @@ public class JobPostController {
 
     // 게시글 상세 조회
     @GetMapping("/JobPostDetail")
-        public String jobPostDetail(@RequestParam("jobId") Long jobId, Model model) {
-        // 서비스에서 상세 데이터 가져오기
-        JobPostDto jobPostDto = jobPostService.getJobPostById(jobId);
+        public String jobPostDetail(@RequestParam Long jobId, Model model) {
+        // 1. 엔티티를 조회
+        JobPost job = jobPostService.findById(jobId);
         
-        // 모델에 담아서 화면으로 전달
-        model.addAttribute("job", jobPostDto);
+        // 2. 만약 jobPostDto로 변환해서 넘긴다면?
+        // JobPostDto dto = convertToDto(job);
+        // model.addAttribute("job", dto); 
+        
+        // 3. 하지만 HTML은 job.skills 안에 Skill 객체가 있다고 가정함!
+        // -> 이 상황에서 job.skills가 List<Long>이면 skill.name은 에러가 납니다.
+
+        model.addAttribute("job", job); // 가능하면 엔티티를 직접 넘기거나
         model.addAttribute("today", java.time.LocalDate.now());
         
         return "job/JobPostDetail"; // 상세 페이지 HTML 경로
@@ -95,20 +103,30 @@ public class JobPostController {
 
     // 채용 공고 수정 페이지 이동
     @GetMapping("/JobPostUpdate")
-    public String updateForm(@RequestParam("jobId") Long jobId, Model model) {
-        model.addAttribute("job", jobPostService.getJobPostById(jobId));
-        return "job/JobPostUpdate"; // 수정용 HTML 생성 필요
+    public String updateForm(@RequestParam Long jobId, Model model) {
+        JobPost job = jobPostService.findById(jobId);
+        
+        JobPostForm form = new JobPostForm();
+        form.setJobPostTitle(job.getJobPostTitle());
+
+        // 2. 현재 공고에 설정된 스킬 ID 리스트를 form에 넣음
+        List<Long> skillIds = job.getSkills().stream().map(Skill::getId).toList();
+        form.setSkills(skillIds);
+        
+        model.addAttribute("jobPostForm", form);
+        model.addAttribute("allSkills", skillRepository.findAll()); // 전체 스킬 리스트
+        model.addAttribute("job", job); // 업데이트 요청 시 사용할 ID
+
+        return "job/JobPostUpdate";
     }
 
     // 실제 수정 처리
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostUpdate")
-    public String update(@RequestParam("jobId") Long jobId, JobPostDto dto) {
-        System.out.println("수정 요청 확인 - ID: " + jobId);
-        System.out.println("받아온 제목: " + dto.getJobPostTitle());
-        
-        jobPostService.updateJobPost(jobId, dto);
-        return "redirect:/job/JobPostDetail?jobId=" + jobId; // 수정 후 상세페이지로
+    public String update(@RequestParam("jobId") Long jobId, JobPostForm form, JobPost job) {
+        // DTO 없이 바로 Form만 서비스로 넘겨 처리합니다.
+            jobPostService.updateJobPost(jobId, form, job);
+            return "redirect:/job/JobPostDetail?jobId=" + jobId;
     }
 
 

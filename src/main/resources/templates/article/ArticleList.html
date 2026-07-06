@@ -82,11 +82,24 @@
         </table>
     </div>
 
-    <nav class="mt-4" aria-label="Page navigation">
+    <nav aria-label="Page navigation" class="mt-4">
         <ul class="pagination justify-content-center">
-            <li class="page-item"><a class="page-link" href="#">이전</a></li>
-            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-            <li class="page-item"><a class="page-link" href="#">다음</a></li>
+            <li class="page-item" th:classappend="${articlePage.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/article/ArticleList(page=${articlePage.number - 1})}">이전</a>
+            </li>
+
+            <li class="page-item" 
+                th:each="pageNumber : ${#numbers.sequence(
+                    (articlePage.number - 2 < 0 ? 0 : articlePage.number - 2), 
+                    (articlePage.number + 2 >= articlePage.totalPages ? (articlePage.totalPages == 0 ? 0 : articlePage.totalPages - 1) : articlePage.number + 2)
+                )}"
+                th:classappend="${pageNumber == articlePage.number} ? 'active'">
+                <a class="page-link" th:text="${pageNumber + 1}" th:href="@{/article/ArticleList(page=${pageNumber})}">1</a>
+            </li>
+
+            <li class="page-item" th:classappend="${articlePage.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/article/ArticleList(page=${articlePage.number + 1})}">다음</a>
+            </li>
         </ul>
     </nav>
     

@@ -2,6 +2,7 @@ package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -34,6 +35,7 @@ import com.devarchive.devarchive.service.ArticleService;
 import com.devarchive.devarchive.service.JobPostService;
 import com.devarchive.devarchive.service.StudyProgressService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/article")
@@ -73,37 +75,46 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleList")
-    public String myArticleList(Principal principal, Model model, 
+    public String myArticleList(HttpServletRequest request, Principal principal, Model model, 
                                 @PageableDefault(size = 10) Pageable pageable) {
         
+        // 0. 로그인 여부 체크
+        if (principal == null) return "redirect:/login";
         String username = principal.getName();
+
+        // 1. 기업 사용자인 경우 처리
+        if (request.isUserInRole("ROLE_COMPANY")) {
+            model.addAttribute("articlePage", Page.empty()); // 빈 페이지 객체
+            model.addAttribute("articleList", Collections.emptyList());
+            model.addAttribute("jobCount", 0);
+            model.addAttribute("articleCount", 0);
+            model.addAttribute("studyingCount", 0);
+            return "article/ArticleList";
+        }
+
+        // 2. 일반 유저용 데이터 조회 (최적화: 서비스 호출 최소화)
         Page<Article> myArticles = articleService.findArticlesByUsername(username, pageable);
-
-        // 1. 여기서 서비스의 정확한 카운트 메서드를 호출합니다.
-        long jobCount = articleService.getUniqueJobCount(username);
-
-        // 1. 로그인한 유저의 진행 상황 리스트만 가져오기 (서비스에 이 메서드 구현 필요)
         List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
+        long jobCount = articleService.getUniqueJobCount(username);
+        long articleCount = articleService.getArticleCount(username);
         
-        // 2. 진행 중(STUDYING)인 개수만 별도 계산
         long studyingCount = progressList.stream()
                 .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
                 .count();
 
-        // 2. 모델에 정확한 이름으로 담습니다.
+        // 3. 모델 전달
+        model.addAttribute("articlePage", myArticles);           // 페이징용
+        model.addAttribute("articleList", myArticles.getContent()); // 리스트 출력용
         model.addAttribute("jobCount", jobCount);
-
-        model.addAttribute("articleCount", articleService.getArticleCount(username));
-        model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
-        model.addAttribute("studyingCount", studyingCount); // 이 값을 추가해야 합니다!
-
-        model.addAttribute("articlePage", myArticles);
+        model.addAttribute("articleCount", articleCount);
+        model.addAttribute("studyingCount", studyingCount);
         model.addAttribute("totalArticles", myArticles.getTotalElements()); 
         model.addAttribute("progressList", progressList);
         model.addAttribute("isSearchMode", false);
 
         return "article/ArticleList";
     }
+
 
     @PostMapping("/ArticleList")
     public String searchMyArticles(Principal principal, Model model,

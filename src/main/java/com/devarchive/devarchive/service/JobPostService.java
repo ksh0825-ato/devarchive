@@ -137,29 +137,39 @@ public class JobPostService {
     }
 
 
-    // DTO 변환 로직 (기존에 작성해두신 toDTO 혹은 비슷한 메서드 활용)
     private JobPostDto convertToDto(JobPost jobPost) {
+        // 1. 엔티티 객체 리스트(job.getSkills())에서 ID들만 추출하여 List<Long>으로 변환
+        List<Long> skillIds = jobPost.getSkills().stream()
+                                    .map(Skill::getId)
+                                    .toList();
+
         return JobPostDto.builder()
                 .jobId(jobPost.getJobId())
                 .jobPostTitle(jobPost.getJobPostTitle())
                 .companyName(jobPost.getCompanyName())
-                .createdAt(jobPost.getCreatedAt())
                 .position(jobPost.getPosition())
                 .description(jobPost.getDescription())
                 .url(jobPost.getUrl())
                 .deadline(jobPost.getDeadline())
+                .skills(skillIds) // 엔티티에서 추출한 ID 리스트 사용
                 .build();
     }
     
     // 채용 공고 수정
     @Transactional
-    public void updateJobPost(Long jobId, JobPostDto dto) {
+    public void updateJobPost(Long jobId, JobPostForm form, JobPost job) {
         JobPost jobPost = jobPostRepository.findById(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 공고가 없습니다."));
+                
+        // 1. 스킬 연관관계 업데이트 (ID 리스트를 받아 엔티티 조회 후 연결)
+        List<Skill> newSkills = skillRepository.findAllById(form.getSkills());
+        jobPost.getSkills().clear();
+        jobPost.getSkills().addAll(newSkills);
         
-        // 엔티티의 값을 DTO로 받은 값으로 변경 (엔티티 내부에 update 메서드를 만드는 것이 좋습니다)
-        jobPost.update(dto.getJobPostTitle(), dto.getCompanyName(), dto.getPosition(), 
-                    dto.getDescription(), dto.getUrl(), dto.getDeadline());
+        // 2. 나머지 필드 업데이트
+        jobPost.update(form.getJobPostTitle(), form.getCompanyName(), 
+                    job.getPosition(), form.getDescription(), 
+                    job.getUrl(), job.getDeadline());
     }
 
     // 채용 공고 삭제
