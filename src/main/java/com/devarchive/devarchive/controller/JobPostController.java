@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,14 +40,23 @@ public class JobPostController {
 
     // 공고 목록 조회
     @GetMapping("/JobPostList")
-    public String jobPostList(Model model, HttpServletRequest request,@PageableDefault(size = 10) Pageable pageable) {
+    public String jobPostList(Model model, Authentication auth, HttpServletRequest request,@PageableDefault(size = 10) Pageable pageable) {
         System.out.println("게시판 조회 진입 시도");
             Page<JobPost> jobPostList = jobPostRepository.findAll(pageable);
+            // 1. 기본값 false
+                boolean isCompany = false;
+                
+                // 2. 로그인되어 있고, 권한이 있는지 확인
+                if (auth != null && auth.getAuthorities() != null) {
+                    isCompany = auth.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY"));
+                }
 
             model.addAttribute("job", jobPostList);
             model.addAttribute("maxPage", 5);
             // 오늘 날짜를 모델에 추가 (마감일 계산용)
             model.addAttribute("today", java.time.LocalDate.now()); 
+            model.addAttribute("isCompany", isCompany);
 
             return "job/JobPostList";
 
@@ -54,7 +64,15 @@ public class JobPostController {
 
     // 공고 등록 페이지
     @GetMapping("/JobPostRegister")
-    public String jobPostRegisterForm(Model model) { // void -> String으로 변경
+    public String jobPostRegisterForm(Principal principal, HttpServletRequest request, Model model) { // void -> String으로 변경
+
+        // 일반 회원 접근 차단 (공고 수정은 기업만 가능할 경우)
+        if (!request.isUserInRole("ROLE_COMPANY")) {
+            model.addAttribute("message", "채용 공고는 기업 회원만 작성할 수 있습니다.");
+            model.addAttribute("redirectUrl", "/job/JobPostList"); // 목록으로 이동
+            return "common/alert";
+        }
+
         model.addAttribute("allSkills", skillRepository.findAll()); // 모든 스킬 목록 조회
         model.addAttribute("jobPostForm", new JobPostForm());
         return "job/JobPostRegister";
@@ -84,8 +102,19 @@ public class JobPostController {
 
     // 게시글 상세 조회
     @GetMapping("/JobPostDetail")
-        public String jobPostDetail(@RequestParam Long jobId, Model model) {
-        // 1. 엔티티를 조회
+        public String jobPostDetail(@RequestParam Long jobId, Authentication auth, Model model) {
+        // 1. 기본값 false
+            boolean isCompany = false;
+            
+            // 2. 로그인되어 있고, 권한이 있는지 확인
+            if (auth != null && auth.getAuthorities() != null) {
+                isCompany = auth.getAuthorities().stream()
+                        .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY"));
+            }
+
+            model.addAttribute("isCompany", isCompany);
+
+        
         JobPost job = jobPostService.findById(jobId);
         
         // 2. 만약 jobPostDto로 변환해서 넘긴다면?
@@ -103,11 +132,18 @@ public class JobPostController {
 
     // 채용 공고 수정 페이지 이동
     @GetMapping("/JobPostUpdate")
-    public String updateForm(@RequestParam Long jobId, Model model) {
+    public String updateForm(@RequestParam Long jobId, Principal principal, HttpServletRequest request, Model model) {
         JobPost job = jobPostService.findById(jobId);
         
         JobPostForm form = new JobPostForm();
         form.setJobPostTitle(job.getJobPostTitle());
+
+        // 일반 회원 접근 차단 (공고 수정은 기업만 가능할 경우)
+        if (!request.isUserInRole("ROLE_COMPANY")) {
+            model.addAttribute("message", "채용 공고는 기업 회원만 수정할 수 있습니다.");
+            model.addAttribute("redirectUrl", "/job/JobPostList"); // 목록으로 이동
+            return "common/alert";
+        }
 
         // 2. 현재 공고에 설정된 스킬 ID 리스트를 form에 넣음
         List<Long> skillIds = job.getSkills().stream().map(Skill::getId).toList();
@@ -132,7 +168,8 @@ public class JobPostController {
 
     // 채용 공고 삭제 처리
     @PostMapping("/job/JobPostDelete")
-    public String delete(@RequestParam("jobId") Long jobId) {
+    public String delete(@RequestParam("jobId") Long jobId, Principal principal, HttpServletRequest request, Model model) {
+
         jobPostService.deleteJobPost(jobId);
         return "redirect:/job/JobPostList";
     }

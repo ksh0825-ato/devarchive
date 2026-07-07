@@ -2,7 +2,6 @@ package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,7 +49,15 @@ public class ArticleController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/ArticleRegister")
-    public String ArticleRegisterForm(Model model) {
+    public String ArticleRegisterForm(Principal principal, HttpServletRequest request, Model model) {
+        
+        // 기업 회원 접근 차단
+        if (request.isUserInRole("ROLE_COMPANY")) {
+            model.addAttribute("message", "기업 회원은 학습글을 작성할 수 없습니다.");
+            model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
+            return "common/alert";
+        }
+
         // 모든 공고를 가져와 유저가 선택하게 함
         model.addAttribute("jobPosts", jobPostService.getAllJobPosts());
         model.addAttribute("articleDto", new ArticleDto());
@@ -82,14 +89,11 @@ public class ArticleController {
         if (principal == null) return "redirect:/login";
         String username = principal.getName();
 
-        // 1. 기업 사용자인 경우 처리
+        // 기업 회원 접근 차단
         if (request.isUserInRole("ROLE_COMPANY")) {
-            model.addAttribute("articlePage", Page.empty()); // 빈 페이지 객체
-            model.addAttribute("articleList", Collections.emptyList());
-            model.addAttribute("jobCount", 0);
-            model.addAttribute("articleCount", 0);
-            model.addAttribute("studyingCount", 0);
-            return "article/ArticleList";
+            model.addAttribute("message", "기업 회원은 학습글을 열람할 수 없습니다.");
+            model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
+            return "common/alert";
         }
 
         // 2. 일반 유저용 데이터 조회 (최적화: 서비스 호출 최소화)
@@ -120,7 +124,7 @@ public class ArticleController {
     public String searchMyArticles(Principal principal, Model model,
                                     @RequestParam(value = "keyword", required = false) String keyword,
                                     @PageableDefault(size = 10) Pageable pageable) {
-        
+
         String username = principal.getName();
                 
         List<StudyProgress> rawList = studyProgressService.getProgressByUsername(username);
@@ -177,10 +181,17 @@ public class ArticleController {
 
     // Article 상세 조회
     @GetMapping("/ArticleDetail/{articleId}")
-    public String articleDetail(@PathVariable("articleId") Long articleId, Model model, Principal principal) {
+    public String articleDetail(@PathVariable("articleId") Long articleId, Model model, Principal principal, HttpServletRequest request) {
         Article article = articleService.findById(articleId); 
         List<Tag> tags = articleService.getTagsByArticle(article);
         
+        // 기업 회원 접근 차단
+        if (request.isUserInRole("ROLE_COMPANY")) {
+            model.addAttribute("message", "기업 회원은 학습글을 조회할 수 없습니다.");
+            model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
+            return "common/alert";
+        }
+
         // 예외 처리를 포함한 Account 조회
         Account account = accountRepository.findByUsername(principal.getName())
                         .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자 정보를 찾을 수 없습니다."));
@@ -203,11 +214,18 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleUpdate")
-    public String updateForm(@RequestParam("articleId") Long articleId, Model model) {
+    public String updateForm(@RequestParam("articleId") Long articleId, Model model, HttpServletRequest request, Principal principal) {
         System.out.println("조회할 articleId: " + articleId); // 로그 추가
         
         Article article = articleService.findById(articleId);
         
+        // 기업 회원 접근 차단
+        if (request.isUserInRole("ROLE_COMPANY")) {
+                model.addAttribute("message", "기업 회원은 학습글을 수정할 수 없습니다.");
+                model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
+                return "common/alert";
+        }
+
         if (article == null) {
             System.out.println("해당 ID의 게시글이 없습니다!");
             return "error/404"; // 혹은 적절한 에러 페이지
@@ -236,7 +254,8 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleDelete")
-    public String delete(@RequestParam("articleId") Long articleId, Principal principal) {
+    public String delete(@RequestParam("articleId") Long articleId, Principal principal, HttpServletRequest request, Model model) {
+        
         // 1. 로그인 여부 확인
         if (principal == null) {
             return "redirect:/";
@@ -249,9 +268,16 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleSearchByTag")
-    public String searchByTag(@RequestParam("tagName") String tagName, Principal principal, Model model) {
+    public String searchByTag(@RequestParam("tagName") String tagName, Principal principal, Model model, HttpServletRequest request) {
         String username = principal.getName();
-        
+
+        // 기업 회원 접근 차단
+            if (request.isUserInRole("ROLE_COMPANY")) {
+                model.addAttribute("message", "기업 회원은 학습글을 태그 검색할 수 없습니다.");
+                model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
+                return "common/alert";
+            }
+
         List<Article> articles = articleService.getArticlesByTag(tagName);
         // Page 객체 생성 시 정확한 전체 사이즈를 넘겨줌
         Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), (long) articles.size());

@@ -50,18 +50,19 @@
                 <p th:text="${article.content}" style="white-space: pre-wrap;"></p>
             </div>
 
-            <div class="d-flex justify-content-end mt-4">
+            <div class="d-flex justify-content-end mt-4 border-top pt-3">
                 <a th:href="@{/article/ArticleUpdate(articleId=${article.articleId})}" 
                    class="btn btn-outline-secondary me-2">수정</a>
                 <a th:href="@{/article/ArticleDelete(articleId=${article.articleId})}" 
                    class="btn btn-outline-danger"
                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
-            </div>
+
+                </div>
+                <div class="mt-3 text-center">
+                    <a th:href="@{/article/ArticleList}" class="text-decoration-none text-secondary">← 목록으로 돌아가기</a>
+                </div>
         </div>
 
-        <div class="mt-3 text-center">
-            <a th:href="@{/article/ArticleList}" class="text-decoration-none">← 목록으로 돌아가기</a>
-        </div>
     </div>
 </body>
 </html>

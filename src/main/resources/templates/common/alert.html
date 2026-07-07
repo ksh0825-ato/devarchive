@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <script th:inline="javascript">
+        /* th:inline="javascript"를 사용하면 
+           [(${variable})] 구문을 통해 자바스크립트 문자열로 안전하게 변환됩니다.
+        */
+        var message = /*[[${message}]]*/ '기본 메시지';
+        var redirectUrl = /*[[${redirectUrl}]]*/ 'back';
+        
+        alert(message);
+        
+        if (redirectUrl === 'back') {
+            history.back();
+        } else {
+            location.href = redirectUrl;
+        }
+    </script>
+</body>
+</html>

@@ -70,10 +70,12 @@
                 </td>
                                 
                 <td>
-                    <a th:href="@{/job/JobPostUpdate(jobId=${jobPost.jobId})}" 
-                    class="btn btn-outline-secondary btn-sm me-2">수정</a>
-                    <a th:href="@{/job/JobPostDelete(jobId=${jobPost.jobId})}" 
-                    class="btn btn-outline-danger btn-sm"
+                    <a th:if="${isCompany}"
+                        th:href="@{/job/JobPostUpdate(jobId=${jobPost.jobId})}" 
+                        class="btn btn-outline-secondary btn-sm me-2">수정</a>
+                    <a th:if="${isCompany}" 
+                        th:href="@{/job/JobPostDelete(jobId=${jobPost.jobId})}" 
+                        class="btn btn-sm btn-outline-danger"
                     onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
                 </td>
             </tr>
