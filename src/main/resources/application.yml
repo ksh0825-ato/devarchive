@@ -1,7 +1,7 @@
 spring:
   sql:
     init:
-      mode: always
+      mode: never
   datasource:
     url: jdbc:mysql://localhost:3306/devarchive?serverTimezone=UTC&characterEncoding=UTF-8
     username: root
@@ -16,11 +16,7 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect # 이 부분은 건드리지 마세요!
-
-logging:
-  level:
-    org.springframework.security: DEBUG
-
+        
 server:
   error:
     whitelabel:
