@@ -2,7 +2,10 @@ package com.devarchive.devarchive.controller;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,6 +32,7 @@ import com.devarchive.devarchive.repository.InterestJobRepository;
 import com.devarchive.devarchive.repository.JobPostRepository;
 import com.devarchive.devarchive.repository.SkillRepository;
 import com.devarchive.devarchive.service.AccountService;
+import com.devarchive.devarchive.service.InterestJobService;
 import com.devarchive.devarchive.service.JobPostService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,29 +50,44 @@ public class JobPostController {
     private final InterestJobRepository interestJobRepository;
     private final AccountRepository accountRepository;
     private final AccountService accountService;
+    private final InterestJobService interestJobService;
 
     // 공고 목록 조회
     @GetMapping("/JobPostList")
-    public String jobPostList(Model model, Authentication auth, HttpServletRequest request,@PageableDefault(size = 10) Pageable pageable) {
-        System.out.println("게시판 조회 진입 시도");
-            Page<JobPost> jobPostList = jobPostRepository.findAll(pageable);
-            // 1. 기본값 false
-                boolean isCompany = false;
+    public String jobPostList(Model model, Authentication auth, @PageableDefault(size = 10) Pageable pageable) {
+        
+        // 1. 공고 목록 조회
+        Page<JobPost> jobPostList = jobPostRepository.findAll(pageable);
+        
+        boolean isCompany = false;
+        Set<Long> interestedJobIds = new HashSet<>(); // 찜한 공고 ID 담을 곳
+
+        // 2. 로그인 여부 확인 및 권한/찜 목록 조회
+        if (auth != null && auth.isAuthenticated()) {
+            // 권한 체크
+            isCompany = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY"));
+            
+            // 유저 정보 가져오기 (UserDetails 기반)
+            if (!isCompany) { // 기업 회원이 아닐 경우에만 찜 목록 조회
+                UserDetails userDetails = (UserDetails) auth.getPrincipal();
+                Account account = accountRepository.findByUsername(userDetails.getUsername())
+                        .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
                 
-                // 2. 로그인되어 있고, 권한이 있는지 확인
-                if (auth != null && auth.getAuthorities() != null) {
-                    isCompany = auth.getAuthorities().stream()
-                            .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY"));
-                }
+                // 유저 ID로 찜한 공고들의 ID 리스트만 뽑아냄
+                interestedJobIds = interestJobService.findAllByUserId(account.getUserId())
+                        .stream()
+                        .map(ij -> ij.getJobPost().getJobId())
+                        .collect(Collectors.toSet());
+            }
+        }
 
-            model.addAttribute("job", jobPostList);
-            model.addAttribute("maxPage", 5);
-            // 오늘 날짜를 모델에 추가 (마감일 계산용)
-            model.addAttribute("today", java.time.LocalDate.now()); 
-            model.addAttribute("isCompany", isCompany);
+        model.addAttribute("job", jobPostList);
+        model.addAttribute("isCompany", isCompany);
+        model.addAttribute("today", java.time.LocalDate.now());
+        model.addAttribute("interestedJobIds", interestedJobIds); // 찜 목록 모델에 추가
 
-            return "job/JobPostList";
-
+        return "job/JobPostList";
     }
 
     // 공고 등록 페이지

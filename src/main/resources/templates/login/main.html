@@ -62,7 +62,8 @@
 
                     <div th:if="${articleList == null or #lists.isEmpty(articleList)}" class="mt-4 text-center text-muted">
                         <p>아직 작성한 학습글이 없습니다.</p>
-                        <a href="/article/ArticleRegister" class="btn btn-sm btn-outline-primary">첫 글 작성하기</a>
+                        <a th:if="${!isCompany}"
+                        th:href="@{/article/ArticleRegister}" class="btn btn-sm btn-outline-primary">첫 글 작성하기</a>
                     </div>
                 </div>
             </div>
@@ -70,7 +71,8 @@
     </div>
 
     <div class="mt-4 d-flex justify-content-end">
-        <a href="/api/interest" class="btn btn-warning">★ 관심 공고 목록</a>
+        <a th:if="${!isCompany}"
+        th:href="@{/api/interest}" class="btn btn-warning">★ 관심 공고 목록</a>
     </div>
 </div>
 </body>
