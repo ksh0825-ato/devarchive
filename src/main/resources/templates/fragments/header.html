@@ -4,13 +4,30 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
         <div class="container">
             <a class="navbar-brand fw-bold" href="/">DevArchive</a>
+            
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="/job/JobPostList">채용 공고</a></li>
                     <li class="nav-item"><a class="nav-link" href="/article/ArticleList">학습 기록</a></li>
                 </ul>
-                <div class="d-flex">
+
+                <div class="d-flex align-items-center" th:if="${account != null}">
+                    <div class="me-3 text-end">
+                        <h6 class="mb-0">
+                            <span th:text="${account.nickname}">닉네임</span>님 환영합니다!
+                        </h6>
+                        <div class="text-muted" style="font-size: 0.8rem;">
+                            <small>ID: <span th:text="${account.username}">아이디</span></small> 
+                            | 
+                            <small th:text="${account.role == 'ROLE_COMPANY'} ? '기업 회원' : '일반 회원'">회원 유형</small>
+                        </div>
+                    </div>
+                    
                     <a href="/logout" class="btn btn-outline-danger btn-sm">로그아웃</a>
+                </div>
+
+                <div class="d-flex" th:unless="${account != null}">
+                    <a href="/account/login" class="btn btn-outline-primary btn-sm">로그인</a>
                 </div>
             </div>
         </div>
