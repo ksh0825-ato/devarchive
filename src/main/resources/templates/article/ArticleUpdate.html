@@ -38,7 +38,7 @@
 
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary px-4">수정 완료</button>
-            <a th:href="@{/article/ArticleDetail(articleId=${article.articleId})}" class="btn btn-secondary px-4">취소</a>
+            <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" class="btn btn-secondary px-4">취소</a>
         </div>
     </form>
 </div>
