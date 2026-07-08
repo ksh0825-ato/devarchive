@@ -1,6 +1,10 @@
 package com.devarchive.devarchive.domain;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -20,8 +24,9 @@ public class InterestJob {
 
     private Long userId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "job_id")
+    @OnDelete(action = OnDeleteAction.CASCADE) // DB 레벨에서 삭제 처리
     private JobPost jobPost;
 
     // 명시적 생성자 추가

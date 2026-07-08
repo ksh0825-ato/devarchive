@@ -14,7 +14,6 @@
                 <th>번호</th>
                 <th>제목</th>
                 <th>회사명</th>
-                <th>찜한 날짜</th>
                 <th>상세보기</th>
             </tr>
         </thead>
@@ -23,9 +22,8 @@
                 <td th:text="${interest.jobPost.jobId}"></td>
                 <td th:text="${interest.jobPost.jobPostTitle}"></td>
                 <td th:text="${interest.jobPost.companyName}"></td>
-                <td th:text="${#temporals.format(interest.createdAt, 'yyyy-MM-dd')}"></td>
                 <td>
-                    <a th:href="@{/JobPostDetail(jobId=${interest.jobPost.jobId})}">보기</a>
+                    <a th:href="@{/job/JobPostDetail(jobId=${interest.jobPost.jobId})}">보기</a>
                 </td>
             </tr>
         </tbody>
@@ -35,7 +33,7 @@
         아직 찜한 공고가 없습니다.
     </p>
 
-    <a th:href="@{/login/main}">메인으로 돌아가기</a>
+    <a th:href="@{/}">메인으로 돌아가기</a>
 
 </body>
 </html>
