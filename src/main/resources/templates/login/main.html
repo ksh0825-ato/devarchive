@@ -44,13 +44,12 @@
             </div>
         </div>
 
-    <div class="col-md-6">
+    <div class="col-md-6" th:unless="${account != null and account.role == 'ROLE_COMPANY'}">
         <div class="card shadow-sm h-100">
             <div class="card-body">
                 <h5 class="card-title fw-bold">
                     <a href="/article/ArticleList" class="text-decoration-none text-dark">전체 학습 기록</a>
                 </h5>
-                
                 <div style="max-height: 300px; overflow-y: auto;" class="mt-3">
                     <ul class="list-group list-group-flush" th:if="${articleList != null and !#lists.isEmpty(articleList)}">
                             <li th:each="article : ${articleList}" class="list-group-item px-0">

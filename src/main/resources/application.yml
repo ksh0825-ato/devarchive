@@ -20,5 +20,4 @@ spring:
 server:
   error:
     whitelabel:
-      enabled: false  # 에러 페이지 기능을 끄고 브라우저에 직접 에러를 노출시킵니다.
-    include-stacktrace: always # 스택 트레이스를 항상 포함합니다.
+      enabled: true

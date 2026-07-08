@@ -110,7 +110,8 @@
     </nav>
 
     <div class="text-end">
-        <a th:href="@{/job/JobPostRegister}" class="btn btn-success">글쓰기</a>
+        <a th:if="${isCompany}"
+        th:href="@{/job/JobPostRegister}" class="btn btn-success">공고 작성</a>
     </div>
 </div>
 

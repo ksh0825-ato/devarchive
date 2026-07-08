@@ -1,16 +1,29 @@
 package com.devarchive.devarchive.config;
 
-import com.devarchive.devarchive.domain.*;
-import com.devarchive.devarchive.repository.*;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collections;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
+import com.devarchive.devarchive.domain.Account;
+import com.devarchive.devarchive.domain.Article;
+import com.devarchive.devarchive.domain.ArticleTag;
+import com.devarchive.devarchive.domain.InterestJob;
+import com.devarchive.devarchive.domain.JobPost;
+import com.devarchive.devarchive.domain.Skill;
+import com.devarchive.devarchive.domain.Tag;
+import com.devarchive.devarchive.repository.AccountRepository;
+import com.devarchive.devarchive.repository.ArticleRepository;
+import com.devarchive.devarchive.repository.InterestJobRepository;
+import com.devarchive.devarchive.repository.JobPostRepository;
+import com.devarchive.devarchive.repository.SkillRepository;
+import com.devarchive.devarchive.repository.TagRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -48,8 +61,10 @@ public class DataInitializer implements CommandLineRunner {
         // 2. 기술 스택(Skill) 생성
         if (skillRepository.count() == 0) {
             skillRepository.save(new Skill("Java"));
-            skillRepository.save(new Skill("React"));
+            skillRepository.save(new Skill("JavaScript"));
             skillRepository.save(new Skill("Spring"));
+            skillRepository.save(new Skill("Python"));
+            skillRepository.save(new Skill("MySQL"));
         }
 
         // 3. 채용 공고(JobPost) 및 스킬 연결 생성
@@ -65,6 +80,7 @@ public class DataInitializer implements CommandLineRunner {
                     .description("대규모 트래픽 처리를 위한 서버 개발")
                     .deadline(LocalDate.now().plusMonths(1))
                     .skills(Collections.singletonList(java))
+                    .createdAt(LocalDateTime.now())
                     .build();
             jobPostRepository.save(job);
 
@@ -77,6 +93,7 @@ public class DataInitializer implements CommandLineRunner {
                     .title("삼성전자 백엔드 공고 분석")
                     .content("대규모 트래픽 아키텍처 학습 필요.")
                     .viewCount(0L)
+                    .createdAt(LocalDateTime.now())
                     .build();
             articleRepository.save(article);
 
