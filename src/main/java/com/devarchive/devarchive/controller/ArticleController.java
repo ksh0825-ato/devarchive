@@ -49,7 +49,8 @@ public class ArticleController {
 
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/ArticleRegister")
-    public String ArticleRegisterForm(Principal principal, HttpServletRequest request, Model model) {
+    public String ArticleRegisterForm(@RequestParam(required = false) Long jobId,
+                                      Principal principal, HttpServletRequest request, Model model) {
         
         // 기업 회원 접근 차단
         if (request.isUserInRole("ROLE_COMPANY")) {
@@ -58,11 +59,19 @@ public class ArticleController {
             return "common/alert";
         }
 
+        ArticleDto articleDto = new ArticleDto();
+        
+        // 만약 jobId가 넘어왔다면 DTO에 설정
+        if (jobId != null) {
+            articleDto.setJobId(jobId);
+        }
+
         // 모든 공고를 가져와 유저가 선택하게 함
+        model.addAttribute("articleDto", articleDto);
         model.addAttribute("jobPosts", jobPostService.getAllJobPosts());
-        model.addAttribute("articleDto", new ArticleDto());
         return "article/ArticleRegister";
     }
+    
 
     @PostMapping("/ArticleRegister")
     public String register(@ModelAttribute ArticleDto articleDto, 

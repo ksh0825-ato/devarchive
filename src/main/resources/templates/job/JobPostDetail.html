@@ -29,7 +29,8 @@
                     
                     <div class="d-flex align-items-center">
                         <span class="text-muted fw-bold me-3" th:text="'회사명 | ' + ${job.companyName}">회사명 | (회사명)</span>
-                        <a th:if="${!isCompany}" th:href="@{/article/ArticleRegister}" class="btn btn-outline-success">학습 시작</a>
+                        <a th:if="${!isCompany}" th:href="@{/article/ArticleRegister(jobId=${job.jobId})}" 
+                           class="btn btn-primary">학습 시작</a>
                     </div>
                 </div>
                 

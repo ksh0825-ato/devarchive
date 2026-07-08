@@ -18,14 +18,13 @@
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label fw-bold">관련 채용 공고 선택</label>
-                    <select th:field="*{jobId}" class="form-select">
-                        <option value="">-- 공고를 선택하세요 --</option>
-                        <option th:each="job : ${jobPosts}" 
-                                th:value="${job.jobId}" 
-                                th:text="${job.companyName + ' (' + job.position + ')'}">
-                        </option>
-                    </select>
+                        <select th:field="*{jobId}" class="form-select">
+                            <option value="">-- 공고를 선택하세요 --</option>
+                            <option th:each="job : ${jobPosts}" 
+                                    th:value="${job.jobId}" 
+                                    th:text="${job.companyName + ' (' + job.position + ')'}">
+                            </option>
+                        </select>
                 </div>
                 
                 <div class="mb-3">
