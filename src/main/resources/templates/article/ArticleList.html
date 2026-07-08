@@ -28,19 +28,29 @@
             <div style="max-height: 150px; overflow-y: auto;">
                 <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(progressList)}">
                     <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
-                        <div>
-                            <span class="fw-bold" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.companyName}">회사명</span>
+                        
+                        <div class="d-flex align-items-center" style="flex: 1;">
+                            <span class="fw-bold text-truncate" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.jobPostTitle}">공고명</span>
+                            <span class="fw-bold text-muted mx-2" th:if="${progress.jobPost != null}" th:text="'| ' + ${progress.jobPost.companyName}">| 회사명</span>
                             <span class="fw-bold" th:unless="${progress.jobPost != null}">종료된 공고</span>
                         </div>
-                        
-                        <span class="badge" 
-                            th:with="statusName=${progress.status.name()}"
-                            th:text="${progress.jobPost == null ? '종료' : 
+
+                        <div class="px-3" th:if="${progress.jobPost != null}">
+                            <a th:href="@{/article/ArticleRegister(jobId=${progress.jobPost.jobId})}" 
+                            class="btn btn-sm btn-outline-primary">학습 시작</a>
+                        </div>
+
+                        <div style="min-width: 60px; text-align: right;">
+                            <span class="badge" 
+                                th:with="statusName=${progress.status.name()}"
+                                th:text="${progress.jobPost == null ? '종료' : 
                                             (statusName == 'STUDYING' ? '학습 중' : 
                                             (statusName == 'COMPLETED' ? '완료' : '시작 전'))}"
-                            th:classappend="${progress.jobPost == null ? 'bg-secondary' : 
+                                th:classappend="${progress.jobPost == null ? 'bg-secondary' : 
                                                 (statusName == 'STUDYING' ? 'bg-warning text-dark' : 'bg-success')}">
-                        </span>
+                            </span>
+                        </div>
+
                     </li>
                 </ul>
             </div>
