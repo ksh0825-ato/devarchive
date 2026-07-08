@@ -1,7 +1,7 @@
 package com.devarchive.devarchive.controller;
 
 import java.util.Collections;
-import java.util.List;
+import java.util.Optional;
 
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,7 +10,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import com.devarchive.devarchive.domain.Account;
-import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.service.ArticleService;
 import com.devarchive.devarchive.service.JobPostService;
@@ -24,33 +23,34 @@ public class MainController {
     private final JobPostService jobPostService;
     private final ArticleService articleService;
 
-   @GetMapping("/")
+    @GetMapping("/")
     public String index(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        
         if (userDetails == null) {
             return "redirect:/account/login";
         }
+        
+        System.out.println(">>> 컨트롤러 진입 성공! 유저 정보: " + userDetails);
 
-        Account account = accountRepository.findByUsername(userDetails.getUsername())
-                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
-
-        model.addAttribute("account", account);
-        boolean isCompany = account.getRole() != null && account.getRole().contains("COMPANY");
-        model.addAttribute("isCompany", isCompany);
-
-        // 1. 기업 사용자가 아닐 때만 학습글 조회
-        if (!isCompany) {
-                String username = userDetails.getUsername();
-                // 페이지네이션 없이 전체를 리스트로 가져오기
-                List<Article> myArticles = articleService.findAllByUsername(username);
-                model.addAttribute("articleList", myArticles); 
-                // 데이터가 null일 경우를 대비해 빈 리스트를 전달
-                model.addAttribute("articleList", myArticles != null ? myArticles : Collections.emptyList());
-            } else {
-                model.addAttribute("articleList", Collections.emptyList()); // 빈 리스트 명시
+        // 1. Account 객체 조회
+        Optional<Account> accountOpt = accountRepository.findByUsername(userDetails.getUsername());
+        
+        // 만약 로그인은 되었는데 DB에 계정이 없으면 여기서 에러
+        if (accountOpt.isEmpty()) {
+            return "redirect:/account/login?error=true"; 
         }
         
-        // 공고는 전체를 보여주어도 무방하다면 그대로 둡니다.
-        model.addAttribute("jobList", jobPostService.findAll()); 
+        Account account = accountOpt.get();
+        model.addAttribute("account", account);
+        
+        // 2. 역할 확인 (null 방어)
+        String role = account.getRole();
+        boolean isCompany = role != null && role.contains("COMPANY");
+        model.addAttribute("isCompany", isCompany);
+
+        // 3. 데이터 조회 (Null 방어)
+        model.addAttribute("articleList", !isCompany ? articleService.findAllByUsername(account.getUsername()) : Collections.emptyList());
+        model.addAttribute("jobList", jobPostService.findAll());
 
         return "login/main"; 
     }

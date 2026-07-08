@@ -1,4 +1,7 @@
 spring:
+  sql:
+    init:
+      mode: always
   datasource:
     url: jdbc:mysql://localhost:3306/devarchive?serverTimezone=UTC&characterEncoding=UTF-8
     username: root
@@ -6,9 +9,20 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
+    defer-datasource-initialization: true # data.sql을 위한 필수 설정
     hibernate:
-      ddl-auto: update # 테이블 자동 생성 (개발 단계)
+      ddl-auto: create-drop # 테이블 자동 생성 (개발 단계)
     show-sql: true     # 실행되는 SQL문 콘솔 출력
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.MySQL8Dialect
+        dialect: org.hibernate.dialect.MySQL8Dialect # 이 부분은 건드리지 마세요!
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+
+server:
+  error:
+    whitelabel:
+      enabled: false  # 에러 페이지 기능을 끄고 브라우저에 직접 에러를 노출시킵니다.
+    include-stacktrace: always # 스택 트레이스를 항상 포함합니다.

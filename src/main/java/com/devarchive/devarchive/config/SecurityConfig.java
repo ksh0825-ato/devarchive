@@ -10,6 +10,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+    
 
 @Bean
 public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -27,7 +28,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .authorizeHttpRequests(auth -> auth
                 // 목록 조회나 상세 조회는 로그인한 사람이라면 누구나 볼 수 있게 허용
                 // 로그인 페이지와 메인 진입 페이지는 모두 접근 가능해야 함
-                    .requestMatchers("/account/register", "/", "/api/interst", "/common/alert", "/account/login", "/job/JobPostList", "/job/JobPostDetail", "/login/main", "/css/**", "/js/**").permitAll() 
+                    .requestMatchers("/account/register", "/", "/api/interst", "/common/alert", "/account/login", "/job/JobPostList", "/job/JobPostDetail", "/account/loginProc", "/login/main", "/css/**", "/js/**").permitAll() 
                     
                     // 기존 설정들
                     .requestMatchers("/job/JobPostRegister", "/job/JobPostUpdate", "/job/JobPostDelete").hasRole("COMPANY")
@@ -36,9 +37,9 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             )
         
         .formLogin(form -> form
-        .loginPage("/account/login")
-        .defaultSuccessUrl("/", true) // 로그인 성공 시 무조건 목록 페이지로 이동
-        .permitAll()
+            .loginPage("/account/login")
+            .defaultSuccessUrl("/", true) // 로그인 성공 시 무조건 목록 페이지로 이동
+            .permitAll()
         )
     
         .logout(logout -> logout
