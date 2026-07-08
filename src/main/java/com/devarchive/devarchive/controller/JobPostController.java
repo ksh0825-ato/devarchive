@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,12 +19,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.domain.Skill;
 import com.devarchive.devarchive.dto.jobpost.JobPostDto;
 import com.devarchive.devarchive.dto.jobpost.JobPostForm;
+import com.devarchive.devarchive.repository.AccountRepository;
+import com.devarchive.devarchive.repository.InterestJobRepository;
 import com.devarchive.devarchive.repository.JobPostRepository;
 import com.devarchive.devarchive.repository.SkillRepository;
+import com.devarchive.devarchive.service.AccountService;
 import com.devarchive.devarchive.service.JobPostService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -37,6 +43,9 @@ public class JobPostController {
     private final JobPostService jobPostService;
     private final JobPostRepository jobPostRepository;
     private final SkillRepository skillRepository;
+    private final InterestJobRepository interestJobRepository;
+    private final AccountRepository accountRepository;
+    private final AccountService accountService;
 
     // 공고 목록 조회
     @GetMapping("/JobPostList")
@@ -99,35 +108,46 @@ public class JobPostController {
 
     }
 
-
     // 게시글 상세 조회
     @GetMapping("/JobPostDetail")
-        public String jobPostDetail(@RequestParam Long jobId, Authentication auth, Model model) {
-        // 1. 기본값 false
-            boolean isCompany = false;
+    public String jobPostDetail(@RequestParam Long jobId, 
+                                @AuthenticationPrincipal UserDetails userDetails, 
+                                Model model) {
+        
+        // 1. 로그인 여부 확인 및 관심 여부 세팅
+        boolean isInterested = false;
+        
+        if (userDetails != null) {
+            // userDetails에서 직접 username을 가져옵니다.
+            String username = userDetails.getUsername(); 
+            Account account = accountRepository.findByUsername(username)
+                    .orElse(null);
             
-            // 2. 로그인되어 있고, 권한이 있는지 확인
-            if (auth != null && auth.getAuthorities() != null) {
-                isCompany = auth.getAuthorities().stream()
-                        .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY"));
+            if (account != null) {
+                isInterested = interestJobRepository.existsByUserIdAndJobPostJobId(
+                        account.getUserId(),
+                        jobId
+                );
+            } else {
+                System.out.println("account = null");
             }
+            
+        } else {
+            System.out.println("userDetails = null");
+        }
 
-            model.addAttribute("isCompany", isCompany);
-
-        
+        // 2. 게시글 상세 정보 조회
         JobPost job = jobPostService.findById(jobId);
-        
-        // 2. 만약 jobPostDto로 변환해서 넘긴다면?
-        // JobPostDto dto = convertToDto(job);
-        // model.addAttribute("job", dto); 
-        
-        // 3. 하지만 HTML은 job.skills 안에 Skill 객체가 있다고 가정함!
-        // -> 이 상황에서 job.skills가 List<Long>이면 skill.name은 에러가 납니다.
-
-        model.addAttribute("job", job); // 가능하면 엔티티를 직접 넘기거나
+        model.addAttribute("job", job);
+        model.addAttribute("isInterested", isInterested);
         model.addAttribute("today", java.time.LocalDate.now());
         
-        return "job/JobPostDetail"; // 상세 페이지 HTML 경로
+        // 권한 확인 (필요시)
+        boolean isCompany = (userDetails != null && userDetails.getAuthorities().stream()
+                            .anyMatch(a -> a.getAuthority().equals("ROLE_COMPANY")));
+        model.addAttribute("isCompany", isCompany);
+        
+        return "job/JobPostDetail";
     }
 
     // 채용 공고 수정 페이지 이동

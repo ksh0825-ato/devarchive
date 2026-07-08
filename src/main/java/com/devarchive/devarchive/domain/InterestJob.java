@@ -10,19 +10,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-// Account와 JobPost를 연결
 @Entity
 @Getter @Setter
-@NoArgsConstructor
+@NoArgsConstructor // 기본 생성자 유지
 public class InterestJob {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
+    private Long userId;
 
     @ManyToOne
-    @JoinColumn(name = "job_post_id")
+    @JoinColumn(name = "job_id")
     private JobPost jobPost;
+
+    // 명시적 생성자 추가
+    public InterestJob(Long userId, JobPost jobPost) {
+        this.userId = userId;
+        this.jobPost = jobPost;
+    }
 }

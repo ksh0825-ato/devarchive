@@ -71,10 +71,10 @@ public class JobPostService {
      }
     
     // 2. 관심 공고 추가
-    public void addInterestJob(Account account, Long jobPostId) {
+    public void addInterestJob(Long userId, Long jobPostId) {
         JobPost jobPost = jobPostRepository.findById(jobPostId).orElseThrow();
         InterestJob interest = new InterestJob();
-        interest.setAccount(account);
+        interest.setUserId(userId);
         interest.setJobPost(jobPost);
         interestJobRepository.save(interest);
     }

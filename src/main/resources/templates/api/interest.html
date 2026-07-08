@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관심 공고 목록</title>
+</head>
+<body>
+
+    <h1>나의 관심 공고 목록</h1>
+
+    <table border="1" th:if="${interestList != null and interestList.size() > 0}">
+        <thead>
+            <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>회사명</th>
+                <th>찜한 날짜</th>
+                <th>상세보기</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="interest : ${interestList}">
+                <td th:text="${interest.jobPost.jobId}"></td>
+                <td th:text="${interest.jobPost.jobPostTitle}"></td>
+                <td th:text="${interest.jobPost.companyName}"></td>
+                <td th:text="${#temporals.format(interest.createdAt, 'yyyy-MM-dd')}"></td>
+                <td>
+                    <a th:href="@{/JobPostDetail(jobId=${interest.jobPost.jobId})}">보기</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p th:if="${interestList == null or interestList.size() == 0}">
+        아직 찜한 공고가 없습니다.
+    </p>
+
+    <a th:href="@{/login/main}">메인으로 돌아가기</a>
+
+</body>
+</html>
