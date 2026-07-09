@@ -28,7 +28,7 @@
                     
             <div class="text-muted mt-2">
                 <p class="mb-1">
-                    <strong>연관 채용 공고:</strong> 
+                    <strong>연관 채용 공고 | </strong> 
                     <span th:if="${article.jobPost != null}">
                         <a th:href="@{/job/JobPostDetail(jobId=${article.jobPost.jobId})}" 
                             class="text-decoration-none text-dark"
@@ -36,7 +36,9 @@
                     </span>
                     <span th:unless="${article.jobPost != null}">연관된 공고 없음</span>
                 </p>
-                <p>작성일 | <span th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+                <p><strong>작성일 | </strong>
+                    <span th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd HH:mm')}"></span>
+                </p>
             </div>
             
             <hr>

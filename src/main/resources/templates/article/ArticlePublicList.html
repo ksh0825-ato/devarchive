@@ -30,8 +30,7 @@
                                th:text="${article.title}" class="text-decoration-none text-muted">학습 기록 제목</a>
                         </td>
                         <td>
-                            <a th:href="@{/article/public/{userId}(userId=${article.account.userId})}" 
-                               th:text="${article.account.nickname}" class="text-decoration-none fw-bold">닉네임</a>
+                            <a th:text="${article.account.nickname}" class="text-decoration-none text-muted">닉네임</a>
                         </td>
                         <td>
                             <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
@@ -47,6 +46,26 @@
             </div>
         </div>
 
+        <nav aria-label="Page navigation" class="mt-4" th:if="${not #lists.isEmpty(articlePage.content)}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${articlePage.first} ? 'disabled'">
+                    <a class="page-link" th:href="@{/article/ArticlePublicList(page=${articlePage.number - 1})}">이전</a>
+                </li>
+
+                <li class="page-item" 
+                    th:each="pageNumber : ${#numbers.sequence(
+                        (articlePage.number - 2 < 0 ? 0 : articlePage.number - 2), 
+                        (articlePage.number + 2 >= articlePage.totalPages ? (articlePage.totalPages == 0 ? 0 : articlePage.totalPages - 1) : articlePage.number + 2)
+                    )}"
+                    th:classappend="${pageNumber == articlePage.number} ? 'active'">
+                    <a class="page-link" th:text="${pageNumber + 1}" th:href="@{/article/ArticlePublicList(page=${pageNumber})}">1</a>
+                </li>
+
+                <li class="page-item" th:classappend="${articlePage.last} ? 'disabled'">
+                    <a class="page-link" th:href="@{/article/ArticlePublicList(page=${articlePage.number + 1})}">다음</a>
+                </li>
+            </ul>
+        </nav>
     </div>
 </body>
 </html>

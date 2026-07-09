@@ -30,6 +30,12 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("SELECT a FROM Article a WHERE a.account.username = :username AND a.title LIKE %:keyword%")
     Page<Article> findByAccount_UsernameAndTitleContaining(@Param("username") String username, @Param("keyword") String keyword, Pageable pageable);
 
+    // 1. 페이징 처리를 위해 Page<Article> 반환
+    // 2. @EntityGraph를 사용하여 연관된 태그 정보를 한 번의 쿼리(JOIN)로 가져옴 (N+1 문제 방지)
+    @EntityGraph(attributePaths = {"articleTags", "articleTags.tag"})
+    @Query("SELECT a FROM Article a WHERE a.visibility = 'PUBLIC' ORDER BY a.createdAt DESC")
+    Page<Article> findAllPublicArticles(Pageable pageable);
+
     @Query("SELECT a FROM Article a JOIN FETCH a.jobPost WHERE a.articleId = :articleId")
     Optional<Article> findByIdWithJobPost(@Param("articleId") Long articleId);
 

@@ -313,11 +313,15 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticlePublicList")
-    public String publicArticleList(Model model) {
+    public String publicArticleList(Model model, @PageableDefault(size = 10) Pageable pageable) {
         // 공개된 글만 가져옴 (Article.Visibility.PUBLIC)
         List<Article> publicArticles = articleRepository.findByVisibilityOrderByCreatedAtDesc(Visibility.PUBLIC);
         
+        Page<Article> articlePage = articleService.findAllPublicArticles(pageable); // Page 타입으로 조회 필수
+
+        model.addAttribute("articlePage", articlePage);
         model.addAttribute("articles", publicArticles);
+        model.addAttribute("articles", articlePage.getContent());
         return "article/ArticlePublicList"; // 뷰 파일 경로
     }
         

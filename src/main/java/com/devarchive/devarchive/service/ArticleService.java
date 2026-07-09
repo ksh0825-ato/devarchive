@@ -142,6 +142,11 @@ public class ArticleService {
         // 1번에서 선언한 변수명(articleRepository)으로 호출합니다.
         return articleRepository.findAll();
     }
+
+    @Transactional(readOnly = true)
+    public Page<Article> findAllPublicArticles(Pageable pageable) {
+        return articleRepository.findAllPublicArticles(pageable);
+    }
     
     @Transactional
     public void deleteArticle(Long articleId, String username) {
