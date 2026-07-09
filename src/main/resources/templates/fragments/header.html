@@ -11,6 +11,10 @@
                     <li class="nav-item" th:if="${account == null or account.role != 'ROLE_COMPANY'}">
                         <a class="nav-link" href="/article/ArticleList">학습 기록</a>
                     </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/article/ArticlePublicList">공부 기록 공유</a>
+                    </li>
                 </ul>
 
                 <div class="d-flex align-items-center">

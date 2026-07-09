@@ -26,6 +26,7 @@ import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.domain.Tag;
+import com.devarchive.devarchive.domain.Visibility;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
@@ -35,6 +36,7 @@ import com.devarchive.devarchive.service.JobPostService;
 import com.devarchive.devarchive.service.StudyProgressService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/article")
@@ -97,13 +99,6 @@ public class ArticleController {
         // 0. 로그인 여부 체크
         if (principal == null) return "redirect:/login";
         String username = principal.getName();
-
-        // 기업 회원 접근 차단
-        if (request.isUserInRole("ROLE_COMPANY")) {
-            model.addAttribute("message", "기업 회원은 학습글을 열람할 수 없습니다.");
-            model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
-            return "common/alert";
-        }
 
         // 2. 일반 유저용 데이터 조회 (최적화: 서비스 호출 최소화)
         Page<Article> myArticles = articleService.findArticlesByUsername(username, pageable);
@@ -193,13 +188,6 @@ public class ArticleController {
     public String articleDetail(@PathVariable("articleId") Long articleId, Model model, Principal principal, HttpServletRequest request) {
         Article article = articleService.findById(articleId); 
         List<Tag> tags = articleService.getTagsByArticle(article);
-        
-        // 기업 회원 접근 차단
-        if (request.isUserInRole("ROLE_COMPANY")) {
-            model.addAttribute("message", "기업 회원은 학습글을 조회할 수 없습니다.");
-            model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
-            return "common/alert";
-        }
 
         // 예외 처리를 포함한 Account 조회
         Account account = accountRepository.findByUsername(principal.getName())
@@ -216,9 +204,13 @@ public class ArticleController {
                     .orElse(null); 
             }
 
+        String role = account.getRole();
+        boolean isCompany = role != null && role.contains("COMPANY");    
+
         model.addAttribute("article", article);
         model.addAttribute("tags", tags);
         model.addAttribute("studyProgress", studyProgress); // 모델에 추가
+        model.addAttribute("isCompany", isCompany);
         return "article/ArticleDetail";
     }
 
@@ -255,7 +247,7 @@ public class ArticleController {
 
     // 2. 실제 데이터 업데이트 (POST)
     @PostMapping("/ArticleUpdate")
-    public String updateArticle(@RequestParam("articleId") Long articleId, 
+    public String updateArticle(@RequestParam("articleId") Long articleId,
                                 @ModelAttribute ArticleDto articleDto,
                                 @RequestParam(value = "tagNames", required = false) String tagNames) {
         articleService.updateArticle(articleId, articleDto, tagNames);
@@ -309,5 +301,14 @@ public class ArticleController {
         // 목록 페이지(ArticleList.html)를 재사용하거나 별도 뷰를 지정
         return "article/ArticleList"; 
     }
-    
+
+    @GetMapping("/ArticlePublicList")
+    public String publicArticleList(Model model) {
+        // 공개된 글만 가져옴 (Article.Visibility.PUBLIC)
+        List<Article> publicArticles = articleRepository.findByVisibilityOrderByCreatedAtDesc(Visibility.PUBLIC);
+        
+        model.addAttribute("articles", publicArticles);
+        return "article/ArticlePublicList"; // 뷰 파일 경로
+    }
+        
 }

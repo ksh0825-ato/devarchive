@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 import com.devarchive.devarchive.domain.Account;
 import com.devarchive.devarchive.domain.Article;
 import com.devarchive.devarchive.domain.JobPost;
+import com.devarchive.devarchive.domain.Visibility;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
@@ -45,4 +46,12 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     long countUniqueJobPostsByUsername(@Param("username") String username);
 
     boolean existsByAccountAndJobPost(Account account, JobPost jobPost);
+
+    List<Article> findByAccountUserIdAndVisibility(Long userId, Visibility visibility);
+
+    // 1. 공유 게시판용: 공개된 글만 조회
+    List<Article> findByVisibilityOrderByCreatedAtDesc(Visibility visibility);
+
+    // 2. 내 목록용: 특정 유저의 모든 글 조회 (공개/비공개 상관없이)
+    List<Article> findByAccountUserIdOrderByCreatedAtDesc(Long userId);
 }

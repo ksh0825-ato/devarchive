@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>전체 학습 기록 공유 게시판</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <div class="container my-5">
+        <h2 class="fw-bold mb-4">공부 기록 공유 게시판</h2>
+
+        <div class="d-flex justify-content-between mb-4">
+            <form th:action="@{/article/ArticlePublicList}" method="get" class="d-flex">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control me-2" placeholder="제목 검색">
+                <button type="submit" class="btn btn-primary">검색</button>
+            </form>
+            
+            <form th:action="@{/article/PublicSearchByTag}" method="get" class="d-flex">
+                <input type="text" name="tagName" class="form-control me-2" placeholder="태그 입력 (예: Java)" required>
+                <button type="submit" class="btn btn-outline-primary">태그 검색</button>
+            </form>
+        </div>
+
+        <div class="card shadow-sm p-4">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>번호</th>
+                        <th>제목</th>
+                        <th>작성자</th>
+                        <th>관련 공고</th>
+                        <th>작성일</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="article : ${articles}">
+                        <td th:text="${article.articleId}">1</td>
+                        <td>
+                            <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
+                               th:text="${article.title}" class="text-decoration-none text-muted">학습 기록 제목</a>
+                        </td>
+                        <td>
+                            <a th:href="@{/article/public/{userId}(userId=${article.account.userId})}" 
+                               th:text="${article.account.nickname}" class="text-decoration-none fw-bold">닉네임</a>
+                        </td>
+                        <td>
+                            <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
+                            <span th:unless="${article.jobPost != null}" class="text-muted">-</span>
+                        </td>
+                        <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div th:if="${#lists.isEmpty(articles)}" class="text-center p-5 text-muted">
+                공개된 학습 기록이 없습니다.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

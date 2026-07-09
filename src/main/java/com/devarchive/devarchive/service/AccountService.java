@@ -37,7 +37,13 @@ public class AccountService {
 
         accountRepository.save(account);
     }
-
+    
+    public Long getUserId(String username) {
+        Account account = accountRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + username));
+        return account.getUserId(); // 혹은 account.getId() 등 엔티티 필드명에 맞춰 수정
+    }
+    
     public Account login(String username, String password) {
         // 1. 아이디로 회원 조회
         Account account = accountRepository.findByUsername(username)

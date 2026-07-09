@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<ul class="list-group list-group-flush" th:fragment="articleList(articles, emptyMsg)">
+    <li th:each="article : ${articles}" class="list-group-item px-0">
+        <div> 
+            <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
+               class="text-decoration-none text-dark fw-bold">
+                <span th:text="${article.title}">제목</span>
+                <span th:if="${article.jobPost != null}" th:text="'| ' + ${article.jobPost.companyName}">| 채용 공고명</span>
+            </a>
+        </div>
+        
+        <div class="small mt-1">
+            <span class="text-muted" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-05</span>
+
+            <span th:if="${article.account != null}" th:text="' | ' + ${article.account.nickname}">닉네임</span>
+            
+            <a th:each="articleTag : ${article.articleTags}" 
+               th:href="@{/article/ArticleSearchByTag(tagName=${articleTag.tag.tagName})}" 
+               class="text-primary text-decoration-underline ms-2">
+                <span th:text="'#' + ${articleTag.tag.tagName}">#태그명</span>
+            </a>
+        </div>
+    </li>
+    <li th:if="${#lists.isEmpty(articles)}" class="list-group-item text-center text-muted">
+        기록이 없습니다.
+    </li>
+</ul>
+
+</body>
+</html>

@@ -19,6 +19,7 @@ import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.domain.Tag;
+import com.devarchive.devarchive.domain.Visibility;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
@@ -107,17 +108,26 @@ public class ArticleService {
         article.setTitle(articleDto.getTitle());
         article.setContent(articleDto.getContent());
         article.setUpdatedAt(LocalDateTime.now());
-        // 만약 JobPost도 변경 가능하다면 여기서 setJobPost()도 호출하세요.
+        
+        if (articleDto.getVisibility() != null) {
+            article.setVisibility(Visibility.valueOf(articleDto.getVisibility()));
+        }
     }
 
     // 태그 업데이트 로직
     @Transactional
     public void updateArticle(Long articleId, ArticleDto articleDto, String tagNames) {
-        Article article = articleRepository.findById(articleId).orElseThrow();
+        Article article = articleRepository.findById(articleId)
+            .orElseThrow(() -> new IllegalArgumentException("해당 게시글을 찾을 수 없습니다."));
 
         article.setTitle(articleDto.getTitle());
         article.setContent(articleDto.getContent());
         
+        // DTO의 visibility는 String (예: "PUBLIC" 또는 "PRIVATE")
+        if (articleDto.getVisibility() != null) {
+            article.setVisibility(Visibility.valueOf(articleDto.getVisibility()));
+        }
+
         // 1. 기존 태그 매핑 삭제
         List<ArticleTag> oldTags = articleTagRepository.findByArticle(article);
         articleTagRepository.deleteAll(oldTags);

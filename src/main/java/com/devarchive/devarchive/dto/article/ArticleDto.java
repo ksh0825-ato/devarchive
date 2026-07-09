@@ -16,6 +16,7 @@ public class ArticleDto {
     private Long viewCount;
     private LocalDateTime createdAt; // 생성일
     private LocalDateTime updatedAt; // 수정일
+    private String visibility; 
 
     // 1. 인자가 필요한 경우 사용하는 메서드
     public Article toEntity(String username, Long jobId) {
