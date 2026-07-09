@@ -20,8 +20,8 @@
                         <ul class="list-group list-group-flush" th:if="${not #lists.isEmpty(jobList)}">
                             <li th:each="job : ${jobList}" class="list-group-item px-0">
                                 <a th:href="@{/job/JobPostDetail(jobId=${job.jobId})}" class="text-decoration-none text-dark">
-                                    <span th:text="${job.companyName}">회사명</span> | 
-                                    <span th:text="${job.jobPostTitle}">제목</span>
+                                    <span th:text="${job.jobPostTitle}" class="fw-bold">제목</span> | 
+                                    <span th:text="${job.companyName}">회사명</span>
                                 </a>
                             </li>
                         </ul>
