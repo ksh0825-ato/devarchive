@@ -18,6 +18,8 @@ import com.devarchive.devarchive.domain.JobPost;
 public interface JobPostRepository extends JpaRepository<JobPost, Long> {
     Optional<JobPost> findByCompanyName(String companyName);
 
+    List<JobPost> findByJobPostTitle(String title);
+
     // 마감일(deadline)이 오늘 이후인 것 중, 가까운 순으로 5개
         @Query("SELECT j FROM JobPost j WHERE j.deadline >= CURRENT_DATE ORDER BY j.deadline ASC")
         List<JobPost> findTop5ByDeadlineAfterOrderByDeadlineAsc(Pageable pageable);

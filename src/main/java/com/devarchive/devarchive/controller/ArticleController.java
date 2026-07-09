@@ -93,30 +93,40 @@ public class ArticleController {
     }
 
     @GetMapping("/ArticleList")
-    public String myArticleList(HttpServletRequest request, Principal principal, Model model, 
+    public String myArticleList(Principal principal, Model model, 
                                 @PageableDefault(size = 10) Pageable pageable) {
-        
-        // 0. 로그인 여부 체크
+        System.out.println(">>> 현재 로그인 유저명: " + principal.getName());
+
+        // 1. 유저의 전체 글 개수 확인
+        long totalCount = articleRepository.countByAccount_Username(principal.getName());
+        System.out.println(">>> DB에 저장된 유저의 전체 글 개수: " + totalCount);
+
+        // 2. 공고가 연결된 글 개수 확인
+        long jobLinkedCount = articleRepository.countUniqueJobPostsByUsername(principal.getName());
+        System.out.println(">>> DB에 저장된 유저의 공고 연결 글 개수: " + jobLinkedCount);
+
+        // 0. 로그인 체크
         if (principal == null) return "redirect:/login";
         String username = principal.getName();
 
-        // 2. 일반 유저용 데이터 조회 (최적화: 서비스 호출 최소화)
-        Page<Article> myArticles = articleService.findArticlesByUsername(username, pageable);
+        // 1. 서비스 호출 (페이징 데이터 조회)
+        Page<Article> articlePage = articleService.findArticlesByUsername(username, pageable);
+        
+        // 2. 통계 데이터 조회
         List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
         long jobCount = articleService.getUniqueJobCount(username);
         long articleCount = articleService.getArticleCount(username);
-        
         long studyingCount = progressList.stream()
                 .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
                 .count();
 
-        // 3. 모델 전달
-        model.addAttribute("articlePage", myArticles);           // 페이징용
-        model.addAttribute("articleList", myArticles.getContent()); // 리스트 출력용
+        // 3. 모델 전달 (변수명 명확화)
+        model.addAttribute("articlePage", articlePage);          // 페이징 정보(next, prev 등) 활용용
+        model.addAttribute("articleList", articlePage.getContent()); // 실제 리스트 출력용
         model.addAttribute("jobCount", jobCount);
         model.addAttribute("articleCount", articleCount);
         model.addAttribute("studyingCount", studyingCount);
-        model.addAttribute("totalArticles", myArticles.getTotalElements()); 
+        model.addAttribute("totalArticles", articlePage.getTotalElements()); 
         model.addAttribute("progressList", progressList);
         model.addAttribute("isSearchMode", false);
 

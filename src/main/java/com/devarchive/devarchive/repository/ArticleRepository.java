@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +20,7 @@ import com.devarchive.devarchive.domain.Visibility;
 public interface ArticleRepository extends JpaRepository<Article, Long> {
     
     // 1. 페이징용 (목록 페이지에서 사용)
+    @EntityGraph(attributePaths = {"articleTags", "articleTags.tag"})
     @Query("SELECT a FROM Article a WHERE a.account.username = :username")
     Page<Article> findByAccount_Username(@Param("username") String username, Pageable pageable);
 
@@ -42,8 +44,11 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("SELECT COUNT(DISTINCT a.jobPost) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
     long countDistinctJobByAccount_Username(@Param("username") String username);
 
-    @Query("SELECT count(distinct a.jobPost.id) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
+    @Query("SELECT COUNT(DISTINCT a.jobPost.jobId) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
     long countUniqueJobPostsByUsername(@Param("username") String username);
+
+    @Query("SELECT COUNT(a) FROM Article a WHERE a.account.username = :username")
+    long countAllArticlesByUsername(@Param("username") String username);
 
     boolean existsByAccountAndJobPost(Account account, JobPost jobPost);
 

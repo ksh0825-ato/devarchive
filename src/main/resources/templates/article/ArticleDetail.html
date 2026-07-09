@@ -29,7 +29,7 @@
                     <span th:if="${article.jobPost != null}">
                         <a th:href="@{/job/JobPostDetail(jobId=${article.jobPost.jobId})}" 
                             class="text-decoration-none text-dark"
-                           th:text="${article.jobPost.companyName} + ' (' + ${article.jobPost.position} + ')'"></a>
+                           th:text="${article.jobPost.jobPostTitle} + ' | ' + ${article.jobPost.companyName} + ' (' + ${article.jobPost.position} + ')'"></a>
                     </span>
                     <span th:unless="${article.jobPost != null}">연관된 공고 없음</span>
                 </p>
