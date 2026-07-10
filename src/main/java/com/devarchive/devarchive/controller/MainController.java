@@ -16,7 +16,6 @@ import com.devarchive.devarchive.domain.Visibility;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
 import com.devarchive.devarchive.service.AccountService;
-import com.devarchive.devarchive.service.ArticleService;
 import com.devarchive.devarchive.service.JobPostService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +25,6 @@ public class MainController {
 
     private final AccountRepository accountRepository;
     private final JobPostService jobPostService;
-    private final ArticleService articleService;
     private final ArticleRepository articleRepository;
     private final AccountService accountService;
 
@@ -39,17 +37,21 @@ public class MainController {
         
         // 1. Account 객체 조회
         Optional<Account> accountOpt = accountRepository.findByUsername(userDetails.getUsername());
+        
         if (accountOpt.isEmpty()) {
             return "redirect:/account/login?error=true"; 
         }
+
         Account account = accountOpt.get();
         model.addAttribute("account", account);
+
 
         // 2. 역할 확인
         String role = account.getRole();
         boolean isCompany = role != null && role.contains("COMPANY");
         model.addAttribute("isCompany", isCompany);
 
+        
         // 3. 데이터 조회
         // (A) 내 학습 기록 (개인용)
         Long userId = accountService.getUserId(principal.getName());
@@ -57,12 +59,12 @@ public class MainController {
         model.addAttribute("myArticles", myArticles);
         
         // (B) 공유 학습 기록 (공유 게시판용)
-        // 여기서는 Article.Visibility.PUBLIC으로 접근해야 함
         List<Article> publicArticles = articleRepository.findByVisibilityOrderByCreatedAtDesc(Visibility.PUBLIC);
         model.addAttribute("publicArticles", publicArticles);
 
-        // 기타 데이터
-        model.addAttribute("jobList", jobPostService.findAll());
+
+        // 4. 기타 데이터
+        model.addAttribute("jobList", jobPostService.getAllJobPosts());
 
         return "login/main"; 
     }

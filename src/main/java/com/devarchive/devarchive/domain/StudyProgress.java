@@ -30,7 +30,7 @@ public class StudyProgress {
     private Long progressId; // PK
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "job_id", nullable = true) // null이 가능해야 연결을 끊을 수 있습니다.
+    @JoinColumn(name = "job_id", nullable = true) // null이 가능해야 연결을 끊을 수 있음
     private JobPost jobPost;
 
     @ManyToOne

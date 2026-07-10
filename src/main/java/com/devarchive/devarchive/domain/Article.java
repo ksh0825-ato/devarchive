@@ -50,6 +50,5 @@ public class Article {
     private List<ArticleTag> articleTags = new ArrayList<>();
     
     @Enumerated(EnumType.STRING)
-    private Visibility visibility; // 이제 그냥 Visibility로 사용 가능
-
+    private Visibility visibility;
 }

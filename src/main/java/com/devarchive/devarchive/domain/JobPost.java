@@ -2,13 +2,11 @@ package com.devarchive.devarchive.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,8 +21,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity // 이 클래스가 JPA 엔티티임을 정의
-// Board 클래스의 구조에 맞게 DB 테이블이 생성됨
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -56,7 +53,6 @@ public class JobPost {
     
 
     // update 메서드(채용 공고 수정)
-    // Dto는 데이터를 담는 그릇일 뿐, 로직을 수행하는 객체가 아니기 때문에 이 메서드는 엔티티에 있어야 함
     public void update(String title, String company, String position, String desc, String url, LocalDate deadline) {
         this.jobPostTitle = title;
         this.companyName = company;
@@ -70,4 +66,5 @@ public class JobPost {
     @ManyToMany
     @JoinTable(name = "job_post_skill")
     private List<Skill> skills = new ArrayList<>();
+    
 }

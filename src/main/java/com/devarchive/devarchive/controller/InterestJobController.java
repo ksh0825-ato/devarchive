@@ -7,7 +7,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +18,6 @@ import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.service.InterestJobService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -30,23 +28,22 @@ public class InterestJobController {
     private final InterestJobService interestJobService;
     private final AccountRepository accountRepository;
 
-    // 관심 목록 조회용
+    // 1-1. 관심 목록 조회(get)
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/interest")
     public String interestList(@AuthenticationPrincipal UserDetails userDetails,
                                     Model model, HttpServletRequest request) {
 
-         // 1. 로그인 유저 확인
-         Account account = accountRepository.findByUsername(userDetails.getUsername())
+        // 1-1. 로그인 유저 확인
+        Account account = accountRepository.findByUsername(userDetails.getUsername())
                            .orElseThrow(() -> new IllegalArgumentException("로그인이 필요합니다."));
 
-        // 기업 회원 접근 차단
+        // 1-2. 기업 회원 접근 차단
         if (request.isUserInRole("ROLE_COMPANY")) {
             model.addAttribute("message", "기업 회원은 공고 글을 북마크 할 수 없습니다.");
             model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
             return "common/alert";
         }
-
 
         // 2. 서비스 호출
         List<InterestJob> interestList = interestJobService.findAllByUserId(account.getUserId());
@@ -57,8 +54,7 @@ public class InterestJobController {
         return "api/interest";
     }
 
-
-    // 찜 처리 용
+    // 1-2. 관심 목록 조회(post)
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/interest/{jobId}")
     public String toggleInterest(@PathVariable Long jobId, 

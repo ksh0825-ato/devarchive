@@ -16,7 +16,7 @@ import lombok.Setter;
 
 @Entity
 @Getter @Setter
-@NoArgsConstructor // 기본 생성자 유지
+@NoArgsConstructor
 public class InterestJob {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

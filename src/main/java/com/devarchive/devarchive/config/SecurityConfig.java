@@ -1,6 +1,5 @@
 package com.devarchive.devarchive.config;
 
-import java.io.IOException;
 import java.net.URLEncoder;
 
 import org.springframework.context.annotation.Bean;
@@ -11,11 +10,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
@@ -26,7 +20,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/account/register", "/", "/api/interst", "/common/alert", "/account/login", "/job/JobPostList", "/job/JobPostDetail", "/account/loginProc", "/login/main", "/css/**", "/js/**").permitAll()
+            .requestMatchers("/account/register", "/", "/api/interst", "/common/alert", "/account/login", "/job/JobPostList", "/job/JobPostDetail", "/login/main", "/css/**", "/js/**").permitAll()
             .requestMatchers("/job/JobPostRegister", "/job/JobPostUpdate", "/job/JobPostDelete").hasRole("COMPANY")
             .anyRequest().authenticated()
         )
@@ -34,7 +28,7 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             .loginPage("/account/login") // 로그인 페이지
             .loginProcessingUrl("/account/login") // 폼 전송 주소
             .defaultSuccessUrl("/", true)
-            .failureHandler((request, response, exception) -> { // 람다식으로 간결하게!
+            .failureHandler((request, response, exception) -> {
                 String errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
                 if (exception instanceof BadCredentialsException) {
                     errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";

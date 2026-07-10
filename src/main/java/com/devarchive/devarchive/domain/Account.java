@@ -23,5 +23,4 @@ public class Account {
     private String nickname;
     private String role;
     private LocalDateTime createdAt = LocalDateTime.now();
-
 }

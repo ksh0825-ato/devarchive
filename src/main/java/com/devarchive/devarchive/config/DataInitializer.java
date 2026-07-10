@@ -76,6 +76,7 @@ public class DataInitializer implements CommandLineRunner {
         Account user1 = accountRepository.findByUsername("user1").get();
         Account company1 = accountRepository.findByUsername("company1").get();
 
+
         // 2. 기술 스택(Skill) 생성
         if (skillRepository.count() == 0) {
             skillRepository.save(new Skill("Java"));
@@ -84,6 +85,7 @@ public class DataInitializer implements CommandLineRunner {
             skillRepository.save(new Skill("Python"));
             skillRepository.save(new Skill("MySQL"));
         }
+
 
         // 3. 채용 공고(JobPost) 및 스킬 연결 생성 (D-Day 테스트 케이스 포함)
         if (jobPostRepository.count() == 0) {
@@ -117,8 +119,9 @@ public class DataInitializer implements CommandLineRunner {
             JobPost latestJob1 = jobPostRepository.findByJobPostTitle("백엔드 개발자 채용(여유)").get(0);
             JobPost latestJob2 = jobPostRepository.findByJobPostTitle("데이터 엔지니어 채용(오늘 마감 공고)").get(0);
 
+
             // 4. 학습 기록(Article) 생성
-            // 공개 글 1개
+            // 공개 글
             Article article1 = Article.builder()
                     .account(user1).jobPost(latestJob1).title("삼성전자 백엔드 공고 분석(공개)")
                     .content("대규모 트래픽 아키텍처 학습 필요.").viewCount(0L)
@@ -129,8 +132,17 @@ public class DataInitializer implements CommandLineRunner {
 
             ArticleTag at1 = new ArticleTag(article1, springTag);
             articleTagRepository.save(at1);
+
+            // 공고를 만들고 나서 사용자와 연결된 '학습 진행 상태(StudyProgress)' 생성
+            StudyProgress progress1 = StudyProgress.builder()
+                    .account(user1)
+                    .jobPost(latestJob1) // 위에서 생성한 job
+                    .status(ProgressStatus.STUDYING) // 초기 상태를 학습 중으로 설정
+                    .build();
+            studyProgressRepository.save(progress1);
+
             
-            // 비공개 글 1개
+            // 비공개 글
             Article article2 = Article.builder()
                     .account(user1).jobPost(latestJob2).title("카카오 데이터 엔지니어 분석(비공개)")
                     .content("데이터 파이프라인 학습 중.").viewCount(0L)
@@ -142,14 +154,6 @@ public class DataInitializer implements CommandLineRunner {
             ArticleTag at2 = new ArticleTag(article2, javaTag);
             articleTagRepository.save(at2);
 
-            // 공고를 만들고 나서 사용자와 연결된 '학습 진행 상태(StudyProgress)' 생성
-            StudyProgress progress1 = StudyProgress.builder()
-                    .account(user1)
-                    .jobPost(latestJob1) // 위에서 생성한 job
-                    .status(ProgressStatus.STUDYING) // 초기 상태를 학습 중으로 설정
-                    .build();
-            studyProgressRepository.save(progress1);
-
             StudyProgress progress2 = StudyProgress.builder()
                     .account(user1)
                     .jobPost(latestJob2) // 위에서 생성한 job
@@ -157,6 +161,7 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             studyProgressRepository.save(progress2);
 
+            
             // 5. 관심 공고 생성
             if (!interestJobRepository.existsByUserIdAndJobPostJobId(user1.getUserId(), latestJob1.getJobId())) {
                 interestJobRepository.save(new InterestJob(user1.getUserId(), latestJob1));

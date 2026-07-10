@@ -9,7 +9,7 @@
     <div th:replace="~{fragments/header :: header}"></div>
 
     <div class="container my-5">
-        <h2 class="fw-bold mb-4">공부 기록 공유 게시판</h2>
+        <h2 class="fw-bold mb-4">학습 기록 공유 게시판</h2>
 
         <div class="card shadow-sm p-4">
             <table class="table table-hover">
@@ -33,7 +33,7 @@
                             <a th:text="${article.account.nickname}" class="text-decoration-none text-muted">닉네임</a>
                         </td>
                         <td>
-                            <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
+                            <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">기업명</span>
                             <span th:unless="${article.jobPost != null}" class="text-muted">-</span>
                         </td>
                         <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-01</td>

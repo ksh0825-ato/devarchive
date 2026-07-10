@@ -24,11 +24,11 @@
                     </form>
                     
                     <h2 class="fw-bold me-3">
-                        <span th:text="${job.jobPostTitle}">채용 공고 타이틀</span>
+                        <span th:text="${job.jobPostTitle}">채용 공고 제목</span>
                     </h2>
                     
                     <div class="d-flex align-items-center">
-                        <span class="text-muted fw-bold me-3" th:text="'회사명 | ' + ${job.companyName}">회사명 | (회사명)</span>
+                        <span class="text-muted fw-bold me-3" th:text="'회사명 | ' + ${job.companyName}">기업명 | (기업명)</span>
                         <a th:if="${!isCompany}" th:href="@{/article/ArticleRegister(jobId=${job.jobId})}" 
                            class="btn btn-primary">학습 시작</a>
                     </div>
@@ -37,8 +37,8 @@
                 <hr class="my-3">
                 
                 <div class="mb-2">
-                    <strong>모집 직종 |</strong> <span th:text="${job.position}" class="me-4">직무명</span>
-                    <strong>홈페이지 URL |</strong> <a th:href="${job.url}" target="_blank" th:text="${job.url}">홈페이지</a>
+                    <strong>모집 직무 |</strong> <span th:text="${job.position}" class="me-4">직무명</span>
+                    <strong>홈페이지 URL |</strong> <a th:href="${job.url}" target="_blank" th:text="${job.url}">홈페이지 URL</a>
                 </div>
                 
             <div class="d-flex justify-content-between align-items-center" 
@@ -68,7 +68,7 @@
 
                 <div class="bg-light p-3 border rounded mb-4">
                     <strong>사용 언어 :</strong>
-                    <span th:if="${#lists.isEmpty(job.skills)}" class="text-muted">등록된 기술 없음</span>
+                    <span th:if="${#lists.isEmpty(job.skills)}" class="text-muted">등록된 스킬 없음</span>
                     <span th:each="skill : ${job.skills}" 
                         class="badge bg-primary me-1" 
                         th:text="${skill.name}">JAVA</span>

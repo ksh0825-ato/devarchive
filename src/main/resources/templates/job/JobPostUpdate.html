@@ -23,11 +23,11 @@
 
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">회사명</label>
+                        <label class="form-label fw-bold">기업명</label>
                         <input type="text" name="companyName" class="form-control" th:value="${job.companyName}" required>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">직무</label>
+                        <label class="form-label fw-bold">모집 직무</label>
                         <input type="text" name="position" class="form-control" th:value="${job.position}" required>
                     </div>
                 </div>
@@ -44,7 +44,7 @@
 
 
                 <div class="mb-3">
-                <label class="form-label fw-bold">사용 언어/기술 스택</label>
+                <label class="form-label fw-bold">사용 언어/스킬 스택</label>
                 <div class="border p-3 rounded bg-light">
                     <div th:each="skill : ${allSkills}" class="form-check form-check-inline me-3">
                         <input class="form-check-input" type="checkbox" 

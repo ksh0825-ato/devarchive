@@ -8,7 +8,7 @@
             <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
                class="text-decoration-none text-dark d-flex align-items-center">
                 <span th:text="${article.title}" class="fw-bold">제목</span>
-                <span th:if="${article.jobPost != null}" th:text="' | ' + ${article.jobPost.companyName}" class="ms-2"> | 채용 공고명</span>
+                <span th:if="${article.jobPost != null}" th:text="' | ' + ${article.jobPost.companyName}" class="ms-2"> | 채용 공고 제목</span>
             </a>
         </div>
         

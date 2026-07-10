@@ -30,8 +30,8 @@
                         <li th:each="progress : ${progressList}" class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-0">
                             
                             <div class="d-flex align-items-center" style="flex: 1;">
-                                <span class="fw-bold text-truncate" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.jobPostTitle}">공고명</span>
-                                <span class="fw-bold text-muted mx-2" th:if="${progress.jobPost != null}" th:text="' | ' + ${progress.jobPost.companyName}">| 회사명</span>
+                                <span class="fw-bold text-truncate" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.jobPostTitle}">공고 제목</span>
+                                <span class="fw-bold text-muted mx-2" th:if="${progress.jobPost != null}" th:text="' | ' + ${progress.jobPost.companyName}">| 기업명</span>
                                 <span class="fw-bold" th:unless="${progress.jobPost != null}">종료된 공고</span>
                             </div>
 
@@ -57,6 +57,7 @@
                 
                 <p th:if="${#lists.isEmpty(progressList)}" class="text-muted mt-2">진행 중인 공고가 없습니다.</p>
             </div>
+
         </div>
     </div>
 
@@ -79,7 +80,7 @@
                            th:text="${article.title}" class="text-decoration-none text-dark">제목</a>
                     </td>
                     <td>
-                        <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">회사명</span>
+                        <span th:if="${article.jobPost != null}" th:text="${article.jobPost.companyName}">기업명</span>
                         <span th:unless="${article.jobPost != null}" class="text-muted">-</span>
                     </td>
                     <td th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-06</td>
@@ -113,10 +114,6 @@
             </li>
         </ul>
     </nav>
-<!--     
-    <div class="text-end mt-3">
-        <a th:href="@{/article/ArticleRegister}" class="btn btn-primary">글쓰기</a>
-    </div> -->
 </div>
 
 </body>

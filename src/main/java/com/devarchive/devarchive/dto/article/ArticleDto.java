@@ -14,10 +14,10 @@ public class ArticleDto {
 
     private Long articleId; // 수정 시 필요
 
-    @NotBlank(message = "학습글 제목을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "학습글 제목을 입력해주세요.")
     private String title; // 학습글 제목
 
-    @NotBlank(message = "학습글 본문을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "학습글 본문을 입력해주세요.")
     private String content; // 본문
     
     private Long jobId; // 연결할 채용 공고 ID
@@ -28,6 +28,7 @@ public class ArticleDto {
     @NotNull(message = "공개 여부를 선택해주세요.") // 빈 문자열이나 null 방지
     private Visibility visibility = Visibility.PRIVATE;
 
+    
     // 1. 인자가 필요한 경우 사용하는 메서드
     public Article toEntity(String username, Long jobId) {
         Article article = new Article();

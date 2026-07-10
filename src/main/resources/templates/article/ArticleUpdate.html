@@ -9,7 +9,7 @@
 <div th:replace="~{fragments/header :: header}"></div>
 
 <div class="container mt-5">
-    <h2 class="mb-4">공부 기록 수정</h2>
+    <h2 class="mb-4">학습 기록 수정</h2>
     
     <form th:action="@{/article/ArticleUpdate}" th:object="${article}" method="post" class="p-4 border rounded shadow-sm bg-light">
         <input type="hidden" th:field="*{articleId}">

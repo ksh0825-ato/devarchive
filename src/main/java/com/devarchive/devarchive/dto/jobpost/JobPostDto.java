@@ -15,30 +15,30 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data // Getter/Setter/toString/equals 등을 자동 생성
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder // 객체 생성 시 데이터 적용을 편리하게 하는 Builder 패턴 제공
+@Builder
 public class JobPostDto {
 
-    private Long jobId; // 1. 여기서 정의
+    private Long jobId;
 
-    @NotBlank(message = "공고 제목을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "공고 제목을 입력해주세요.")
     @Size(min = 2, max = 100, message = "제목은 2자 이상 100자 이하로 작성해주세요.")
     private String jobPostTitle; // 공고 타이틀
 
-    @NotBlank(message = "기업명을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "기업명을 입력해주세요.")
     private String companyName; // 회사명
 
-    @NotBlank(message = "직무명을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "직무명을 입력해주세요.")
     private String position; // 채용 중인 직무(직책)명
     // ex) 백엔드 개발자, 데이터 엔지니어를 구합니다 등등
 
-    @NotBlank(message = "공고 설명을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "공고 설명을 입력해주세요.")
     @Size(min = 10, message = "내용은 최소 10자 이상 작성해주세요.")
     private String description; // 설명
 
-    @NotBlank(message = "홈페이지 URL을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "홈페이지 URL을 입력해주세요.")
     private String url; // 링크
     
     @jakarta.validation.constraints.NotNull(message = "마감일을 선택해주세요.") // null 방지
@@ -46,7 +46,7 @@ public class JobPostDto {
     @DateTimeFormat(pattern = "yyyy-MM-dd") // 이 부분을 추가하세요
     private LocalDate deadline; // 마감일
 
-    @NotBlank(message = "사용 스킬을 입력해주세요.") // 빈칸 방지
+    @NotBlank(message = "사용 스킬을 입력해주세요.")
     private List<Long> skills;
 
     @CreationTimestamp

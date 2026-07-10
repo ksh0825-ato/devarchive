@@ -50,12 +50,13 @@ public class ArticleController {
     private final StudyProgressRepository studyProgressRepository;
     private final AccountRepository accountRepository;
 
+    // 1-1. 학습 기록 작성(get)
     @PreAuthorize("hasRole('ROLE_USER')")
     @GetMapping("/ArticleRegister")
     public String ArticleRegisterForm(@RequestParam(required = false) Long jobId,
                                       Principal principal, HttpServletRequest request, Model model) {
         
-        // 기업 회원 접근 차단
+        // 0. 기업 회원 접근 차단
         if (request.isUserInRole("ROLE_COMPANY")) {
             model.addAttribute("message", "기업 회원은 학습글을 작성할 수 없습니다.");
             model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
@@ -64,18 +65,18 @@ public class ArticleController {
 
         ArticleDto articleDto = new ArticleDto();
         
-        // 만약 jobId가 넘어왔다면 DTO에 설정
+        // 1. 만약 jobId가 넘어왔다면 DTO에 설정
         if (jobId != null) {
             articleDto.setJobId(jobId);
         }
 
-        // 모든 공고를 가져와 유저가 선택하게 함
+        // 2. 모든 공고를 가져와 유저가 선택하게 함
         model.addAttribute("articleDto", articleDto);
         model.addAttribute("jobPosts", jobPostService.getAllJobPosts());
         return "article/ArticleRegister";
     }
     
-
+    // 1-2. 학습 기록 작성(post)
     @PostMapping("/ArticleRegister")
     public String register(@Valid @ModelAttribute("articleDto") ArticleDto articleDto,
                         BindingResult bindingResult, Model model,
@@ -99,6 +100,8 @@ public class ArticleController {
         return "redirect:/article/ArticleList";
     }
 
+
+    // 2-1. 학습 기록 리스트(get)
     @GetMapping("/ArticleList")
     public String myArticleList(Principal principal, Model model, 
                                 @PageableDefault(size = 10) Pageable pageable) {
@@ -133,13 +136,14 @@ public class ArticleController {
         return "article/ArticleList";
     }
 
-
+    // 2-2. 학습 기록 리스트(post)
     @PostMapping("/ArticleList")
     public String searchMyArticles(@Valid Principal principal, Model model,
                                     BindingResult bindingResult,
                                     @RequestParam(value = "keyword", required = false) String keyword,
                                     @PageableDefault(size = 10) Pageable pageable) {
         
+        // 0. 에러 표시
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
             return alert(model, msg, "back");
@@ -149,7 +153,8 @@ public class ArticleController {
                 
         List<StudyProgress> rawList = studyProgressService.getProgressByUsername(username);
 
-        // [중복 제거 핵심] Map의 Key를 jobPost.id로 설정하여 중복을 원천 차단
+
+        // 1-1. [중복 제거 핵심] Map의 Key를 jobPost.id로 설정하여 중복을 원천 차단
         Map<Long, StudyProgress> uniqueMap = new java.util.LinkedHashMap<>();
         for (StudyProgress p : rawList) {
             if (p.getJobPost() != null) {
@@ -158,23 +163,26 @@ public class ArticleController {
             }
         }
 
-        // 중복 제거된 리스트 생성
+        // 1-2. 중복 제거된 리스트 생성
         List<StudyProgress> progressList = new ArrayList<>(uniqueMap.values());
 
         long studyingCount = progressList.stream()
                 .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
                 .count();
 
-        System.out.println(">>> 필터링 후 studyingCount: " + studyingCount);
-        
+
         // 2. 검색 및 데이터 조회
-        Page<Article> articlePage;
-        if (keyword != null && !keyword.isEmpty()) {
-            articlePage = articleService.searchArticles(username, keyword, pageable);
-        } else {
-            articlePage = articleService.findArticlesByUsername(username, pageable);
-        }
-        
+        // 검색 기능 보류 중 (필요 시 검색창 UI와 함께 활성화)
+        Page<Article> articlePage = articleService.findArticlesByUsername(username, pageable);
+
+        // Page<Article> articlePage;
+        // if (keyword != null && !keyword.isEmpty()) {
+        //     articlePage = articleService.searchArticles(username, keyword, pageable);
+        // } else {
+        //     articlePage = articleService.findArticlesByUsername(username, pageable);
+        // }
+    
+
         // 3. 모델에 모두 담기
         model.addAttribute("articleCount", articleService.getArticleCount(username));
         model.addAttribute("jobCount", articleService.getUniqueJobCount(username));
@@ -189,20 +197,21 @@ public class ArticleController {
         return "article/ArticleList";
     }
 
-    // Article 상세 조회
+
+    // 3. 학습 기록 상세 조회(get)
     @GetMapping("/ArticleDetail/{articleId}")
     public String articleDetail(@PathVariable("articleId") Long articleId, Model model, Principal principal, HttpServletRequest request) {
         Article article = articleService.findById(articleId); 
         List<Tag> tags = articleService.getTagsByArticle(article);
 
-        // 예외 처리를 포함한 Account 조회
+        // 0. 예외 처리를 포함한 Account 조회
         Account account = accountRepository.findByUsername(principal.getName())
                         .orElseThrow(() -> new IllegalArgumentException("로그인한 사용자 정보를 찾을 수 없습니다."));
 
-        // Article이 연관된 JobPost가 있다면 해당 공고에 대한 진행 상황을 조회
+        // 1. Article이 연관된 JobPost가 있다면 해당 공고에 대한 진행 상황을 조회
         StudyProgress studyProgress = null;
             
-        // 1. article이 jobPost를 가지고 있는지 확인 (삭제된 공고인 경우 방지)
+        // 2. article이 jobPost를 가지고 있는지 확인 (삭제된 공고인 경우 방지)
             if (article.getJobPost() != null) {
                 // 2. Repository 메서드 이름을 수정된 것에 맞게 호출
                 studyProgress = studyProgressRepository
@@ -213,36 +222,32 @@ public class ArticleController {
         String role = account.getRole();
         boolean isCompany = role != null && role.contains("COMPANY");    
 
+
         model.addAttribute("article", article);
         model.addAttribute("tags", tags);
-        model.addAttribute("studyProgress", studyProgress); // 모델에 추가
+        model.addAttribute("studyProgress", studyProgress);
         model.addAttribute("isCompany", isCompany);
         return "article/ArticleDetail";
     }
 
+
+    // 4-1. 학습 기록 수정(get)
     @GetMapping("/ArticleUpdate")
     public String updateForm(@RequestParam("articleId") Long articleId, Model model, HttpServletRequest request, Principal principal) {
-        System.out.println("조회할 articleId: " + articleId); // 로그 추가
-        
-        Article article = articleService.findById(articleId);
-        
-        // 기업 회원 접근 차단
+
+        // 0. 기업 회원 접근 차단
         if (request.isUserInRole("ROLE_COMPANY")) {
                 model.addAttribute("message", "기업 회원은 학습글을 수정할 수 없습니다.");
                 model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
                 return "common/alert";
         }
 
-        if (article == null) {
-            System.out.println("해당 ID의 게시글이 없습니다!");
-            return "error/404"; // 혹은 적절한 에러 페이지
-        }
-    
-        List<Tag> tags = articleService.getTagsByArticle(article);
-        
+        Article article = articleService.findById(articleId);
+        List<Tag> tags = articleService.getTagsByArticle(article); 
+
         model.addAttribute("article", article);
         
-        // 태그를 콤마로 구분된 문자열로 변환하여 입력창에 기본값으로 세팅
+        // 1. 태그를 콤마로 구분된 문자열로 변환하여 입력창에 기본값으로 세팅
         String tagNames = tags.stream()
                             .map(Tag::getTagName)
                             .collect(Collectors.joining(", "));
@@ -251,22 +256,25 @@ public class ArticleController {
         return "article/ArticleUpdate";
     }
 
-    // 2. 실제 데이터 업데이트 (POST)
+    // 4-2. 학습 기록 수정(post)
     @PostMapping("/ArticleUpdate")
     public String updateArticle(@Valid @RequestParam("articleId") Long articleId,
                                 @ModelAttribute ArticleDto articleDto,
                                 @RequestParam(value = "tagNames", required = false) String tagNames,
                                 BindingResult bindingResult, Model model) {
-
+        // 0. 에러 처리
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
             return alert(model, msg, "back");
         }
 
-    articleService.updateArticle(articleId, articleDto, tagNames);
+        articleService.updateArticle(articleId, articleDto, tagNames);
+        
         return "redirect:/article/ArticleDetail/" + articleId;
     }
 
+
+    // 5. 학습 기록 삭제
     @GetMapping("/ArticleDelete")
     public String delete(@RequestParam("articleId") Long articleId, Principal principal, HttpServletRequest request, Model model) {
         
@@ -281,30 +289,29 @@ public class ArticleController {
         return "redirect:/article/ArticleList";
     }
 
+    // 6. 학습 기록 태그 조회
     @GetMapping("/ArticleSearchByTag")
     public String searchByTag(@RequestParam("tagName") String tagName, Principal principal, Model model, HttpServletRequest request) {
         String username = principal.getName();
 
-        // 기업 회원 접근 차단
+        // 0. 기업 회원 접근 차단
             if (request.isUserInRole("ROLE_COMPANY")) {
                 model.addAttribute("message", "기업 회원은 학습글을 태그 검색할 수 없습니다.");
-                model.addAttribute("redirectUrl", "back"); // 이전 페이지로 이동
+                model.addAttribute("redirectUrl", "back");
                 return "common/alert";
             }
 
         List<Article> articles = articleService.getArticlesByTag(tagName);
-        // Page 객체 생성 시 정확한 전체 사이즈를 넘겨줌
         Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), (long) articles.size());
 
         long jobLinkedCount = articleRepository.countUniqueJobPostsByUsername(username);
 
-        // 1. 통계 데이터 추가 (서비스에 아래 메서드들이 구현되어 있어야 함)
+        // 통계 데이터 추가 (서비스에 아래 메서드들이 구현되어 있어야 함)
         List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
             long studyingCount = progressList.stream()
                     .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
                     .count();
 
-        // 2. 모델에 전달
         model.addAttribute("articlePage", articlePage);
         model.addAttribute("tagName", tagName);
         model.addAttribute("isSearchMode", true); // 검색 결과 모드임을 알리는 플래그 
@@ -313,13 +320,13 @@ public class ArticleController {
         model.addAttribute("totalArticles", (long) articles.size()); // 리스트 사이즈를 명확히 할당
         model.addAttribute("studyingCount", studyingCount);
 
-        // 목록 페이지(ArticleList.html)를 재사용하거나 별도 뷰를 지정
         return "article/ArticleList"; 
     }
 
+
+    // 7. 공개 학습 기록 리스트(get)
     @GetMapping("/ArticlePublicList")
     public String publicArticleList(Model model, @PageableDefault(size = 10) Pageable pageable) {
-        // 공개된 글만 가져옴 (Article.Visibility.PUBLIC)
         List<Article> publicArticles = articleRepository.findByVisibilityOrderByCreatedAtDesc(Visibility.PUBLIC);
 
         Page<Article> articlePage = articleService.findAllPublicArticles(pageable); // Page 타입으로 조회 필수
@@ -330,6 +337,8 @@ public class ArticleController {
         return "article/ArticlePublicList"; // 뷰 파일 경로
     }
 
+    
+    // alert용
     private String alert(Model model, String message, String redirectUrl) {
         model.addAttribute("message", message);
         model.addAttribute("redirectUrl", redirectUrl);
