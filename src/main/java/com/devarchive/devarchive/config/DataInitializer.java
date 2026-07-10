@@ -50,14 +50,16 @@ public class DataInitializer implements CommandLineRunner {
         if (accountRepository.findByUsername("user1").isEmpty()) {
             Account user = new Account();
             user.setUsername("user1");
-            user.setPassword(passwordEncoder.encode("1234"));
+            user.setPassword(passwordEncoder.encode("12345678"));
+            user.setEmail("user1@test.com");
             user.setNickname("테스터1");
             user.setRole("ROLE_USER");
             accountRepository.save(user);
 
             Account company = new Account();
             company.setUsername("company1");
-            company.setPassword(passwordEncoder.encode("1234"));
+            company.setPassword(passwordEncoder.encode("12345678"));
+            company.setEmail("company1@test.com");
             company.setNickname("삼성전자채용팀");
             company.setRole("ROLE_COMPANY");
             accountRepository.save(company);
@@ -86,26 +88,30 @@ public class DataInitializer implements CommandLineRunner {
             // 1. 여유 있는 공고 (오늘 이후)
             jobPostRepository.save(JobPost.builder()
                     .account(user).jobPostTitle("백엔드 개발자 채용(여유)").companyName("삼성전자")
+                    .url("https://www.samsung.com")
                     .position("백엔드").description("대규모 트래픽 처리 서버 개발")
                     .deadline(LocalDate.now().plusMonths(1)).skills(skills).createdAt(LocalDateTime.now()).build());
 
             // 2. 오늘 마감 (D-Day)
             jobPostRepository.save(JobPost.builder()
-                    .account(user).jobPostTitle("오늘 마감 공고").companyName("테스트기업")
-                    .position("백엔드").deadline(LocalDate.now()).skills(skills).createdAt(LocalDateTime.now()).build());
+                    .account(user).jobPostTitle("데이터 엔지니어 채용(오늘 마감 공고)").companyName("카카오")
+                    .url("https://www.kakaocorp.com")
+                    .position("데이터 엔지니어").deadline(LocalDate.now()).skills(skills).createdAt(LocalDateTime.now()).build());
 
             // 3. 마감된 공고
             jobPostRepository.save(JobPost.builder()
-                    .account(user).jobPostTitle("마감된 공고").companyName("테스트기업")
+                    .account(user).jobPostTitle("프론트엔드 채용(마감된 공고)").companyName("네이버")
+                    .url("https://www.naver.com")
                     .position("백엔드").deadline(LocalDate.now().minusDays(5)).skills(skills).createdAt(LocalDateTime.now()).build());
 
             // 방금 만든 공고 중 하나를 학습 기록에 연결하기 위해 조회
-            JobPost latestJob = jobPostRepository.findByJobPostTitle("백엔드 개발자 채용(여유)").get(0);
+            JobPost latestJob1 = jobPostRepository.findByJobPostTitle("백엔드 개발자 채용(여유)").get(0);
+            JobPost latestJob2 = jobPostRepository.findByJobPostTitle("데이터 엔지니어 채용(오늘 마감 공고)").get(0);
 
             // 4. 학습 기록(Article) 생성
             // 공개 글 1개
             Article article1 = Article.builder()
-                    .account(user).jobPost(latestJob).title("삼성전자 백엔드 공고 분석(공개)")
+                    .account(user).jobPost(latestJob1).title("삼성전자 백엔드 공고 분석(공개)")
                     .content("대규모 트래픽 아키텍처 학습 필요.").viewCount(0L)
                     .visibility(Visibility.PUBLIC).createdAt(LocalDateTime.now()).build();
             articleRepository.save(article1);
@@ -117,7 +123,7 @@ public class DataInitializer implements CommandLineRunner {
             
             // 비공개 글 1개
             Article article2 = Article.builder()
-                    .account(user).jobPost(latestJob).title("카카오 데이터 엔지니어 분석(비공개)")
+                    .account(user).jobPost(latestJob2).title("카카오 데이터 엔지니어 분석(비공개)")
                     .content("데이터 파이프라인 학습 중.").viewCount(0L)
                     .visibility(Visibility.PRIVATE).createdAt(LocalDateTime.now()).build();
             articleRepository.save(article2);
@@ -128,16 +134,23 @@ public class DataInitializer implements CommandLineRunner {
             articleTagRepository.save(at2);
 
             // 공고를 만들고 나서 사용자와 연결된 '학습 진행 상태(StudyProgress)' 생성
-            StudyProgress progress = StudyProgress.builder()
+            StudyProgress progress1 = StudyProgress.builder()
                     .account(user)
-                    .jobPost(latestJob) // 위에서 생성한 job
+                    .jobPost(latestJob1) // 위에서 생성한 job
                     .status(ProgressStatus.STUDYING) // 초기 상태를 학습 중으로 설정
                     .build();
-            studyProgressRepository.save(progress);
+            studyProgressRepository.save(progress1);
+
+            StudyProgress progress2 = StudyProgress.builder()
+                    .account(user)
+                    .jobPost(latestJob2) // 위에서 생성한 job
+                    .status(ProgressStatus.STUDYING) // 초기 상태를 학습 중으로 설정
+                    .build();
+            studyProgressRepository.save(progress2);
 
             // 5. 관심 공고 생성
-            if (!interestJobRepository.existsByUserIdAndJobPostJobId(user.getUserId(), latestJob.getJobId())) {
-                interestJobRepository.save(new InterestJob(user.getUserId(), latestJob));
+            if (!interestJobRepository.existsByUserIdAndJobPostJobId(user.getUserId(), latestJob1.getJobId())) {
+                interestJobRepository.save(new InterestJob(user.getUserId(), latestJob1));
             }
         }
     }

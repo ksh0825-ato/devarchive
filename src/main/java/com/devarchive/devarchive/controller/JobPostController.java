@@ -16,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ import com.devarchive.devarchive.service.InterestJobService;
 import com.devarchive.devarchive.service.JobPostService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -109,12 +111,16 @@ public class JobPostController {
     // 공고 등록 처리
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostRegister")
-    public String jobPostRegister(@ModelAttribute JobPostDto jobPostDto, Model model, Principal principal, Pageable pageable) {
+    public String jobPostRegister(@ModelAttribute JobPostDto jobPostDto, Model model,
+                                 BindingResult bindingResult, Principal principal, Pageable pageable) {
+        
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
+
         Page<JobPost> jobPosts = jobPostService.getJobPostList(pageable);
-
-        // 1. 데이터 확인을 위한 로그 (값이 잘 넘어오는지 확인)
-        System.out.println("등록 시도 - 제목: " + jobPostDto.getJobPostTitle());
-
+        
         model.addAttribute("today", LocalDate.now());
         model.addAttribute("job", jobPosts);
         
@@ -171,7 +177,20 @@ public class JobPostController {
 
     // 채용 공고 수정 페이지 이동
     @GetMapping("/JobPostUpdate")
-    public String updateForm(@RequestParam Long jobId, Principal principal, HttpServletRequest request, Model model) {
+    public String updateForm(@Valid @RequestParam Long jobId, Principal principal,
+                             BindingResult bindingResult, HttpServletRequest request, Model model) {
+        
+        // 에러
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            
+            // common/alert.html로 데이터 전달
+            model.addAttribute("message", msg);
+            model.addAttribute("redirectUrl", "back"); // 뒤로가기
+            
+            return "common/alert";
+        }
+
         JobPost job = jobPostService.findById(jobId);
         
         JobPostForm form = new JobPostForm();
@@ -198,7 +217,14 @@ public class JobPostController {
     // 실제 수정 처리
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostUpdate")
-    public String update(@RequestParam("jobId") Long jobId, JobPostForm form, JobPost job) {
+    public String update(@Valid @RequestParam("jobId") Long jobId, JobPostForm form, JobPost job,
+                         BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
+
         // DTO 없이 바로 Form만 서비스로 넘겨 처리합니다.
             jobPostService.updateJobPost(jobId, form, job);
             return "redirect:/job/JobPostDetail?jobId=" + jobId;
@@ -207,10 +233,22 @@ public class JobPostController {
 
     // 채용 공고 삭제 처리
     @PostMapping("/job/JobPostDelete")
-    public String delete(@RequestParam("jobId") Long jobId, Principal principal, HttpServletRequest request, Model model) {
+    public String delete(@Valid @RequestParam("jobId") Long jobId, Principal principal, HttpServletRequest request,
+                         BindingResult bindingResult, Model model) {
+    
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
 
         jobPostService.deleteJobPost(jobId);
         return "redirect:/job/JobPostList";
+    }
+
+    private String alert(Model model, String message, String redirectUrl) {
+        model.addAttribute("message", message);
+        model.addAttribute("redirectUrl", redirectUrl);
+        return "common/alert";
     }
 
 }

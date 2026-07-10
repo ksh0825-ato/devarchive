@@ -19,7 +19,6 @@ import com.devarchive.devarchive.domain.JobPost;
 import com.devarchive.devarchive.domain.StudyProgress;
 import com.devarchive.devarchive.domain.StudyProgress.ProgressStatus;
 import com.devarchive.devarchive.domain.Tag;
-import com.devarchive.devarchive.domain.Visibility;
 import com.devarchive.devarchive.dto.article.ArticleDto;
 import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.repository.ArticleRepository;
@@ -110,7 +109,7 @@ public class ArticleService {
         article.setUpdatedAt(LocalDateTime.now());
         
         if (articleDto.getVisibility() != null) {
-            article.setVisibility(Visibility.valueOf(articleDto.getVisibility()));
+            article.setVisibility(articleDto.getVisibility());
         }
     }
 
@@ -123,9 +122,8 @@ public class ArticleService {
         article.setTitle(articleDto.getTitle());
         article.setContent(articleDto.getContent());
         
-        // DTO의 visibility는 String (예: "PUBLIC" 또는 "PRIVATE")
         if (articleDto.getVisibility() != null) {
-            article.setVisibility(Visibility.valueOf(articleDto.getVisibility()));
+            article.setVisibility(articleDto.getVisibility());
         }
 
         // 1. 기존 태그 매핑 삭제

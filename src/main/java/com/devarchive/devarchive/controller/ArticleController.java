@@ -14,6 +14,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,7 +37,7 @@ import com.devarchive.devarchive.service.JobPostService;
 import com.devarchive.devarchive.service.StudyProgressService;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 @Controller
 @RequestMapping("/article")
@@ -76,11 +77,17 @@ public class ArticleController {
     
 
     @PostMapping("/ArticleRegister")
-    public String register(@ModelAttribute ArticleDto articleDto, 
+    public String register(@Valid @ModelAttribute("articleDto") ArticleDto articleDto,
+                        BindingResult bindingResult, Model model,
                         @RequestParam("tagNames") String tagNames, // 폼에서 받아올 태그 문자열
                         @RequestParam(value = "jobId", required = false) Long jobId,
                         Principal principal) {
-        
+
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
+
         String username = principal.getName();
         
         // 1. 게시글 및 공고 연동 저장
@@ -95,15 +102,12 @@ public class ArticleController {
     @GetMapping("/ArticleList")
     public String myArticleList(Principal principal, Model model, 
                                 @PageableDefault(size = 10) Pageable pageable) {
-        System.out.println(">>> 현재 로그인 유저명: " + principal.getName());
 
         // 1. 유저의 전체 글 개수 확인
         long totalCount = articleRepository.countByAccount_Username(principal.getName());
-        System.out.println(">>> DB에 저장된 유저의 전체 글 개수: " + totalCount);
 
         // 2. 공고가 연결된 글 개수 확인
         long jobLinkedCount = articleRepository.countUniqueJobPostsByUsername(principal.getName());
-        System.out.println(">>> DB에 저장된 유저의 공고 연결 글 개수: " + jobLinkedCount);
 
         // 0. 로그인 체크
         if (principal == null) return "redirect:/login";
@@ -135,10 +139,16 @@ public class ArticleController {
 
 
     @PostMapping("/ArticleList")
-    public String searchMyArticles(Principal principal, Model model,
+    public String searchMyArticles(@Valid Principal principal, Model model,
+                                    BindingResult bindingResult,
                                     @RequestParam(value = "keyword", required = false) String keyword,
                                     @PageableDefault(size = 10) Pageable pageable) {
-
+        
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
+        
         String username = principal.getName();
                 
         List<StudyProgress> rawList = studyProgressService.getProgressByUsername(username);
@@ -155,16 +165,6 @@ public class ArticleController {
         // 중복 제거된 리스트 생성
         List<StudyProgress> progressList = new ArrayList<>(uniqueMap.values());
 
-
-        // [중간 확인] 로그 찍기
-        System.out.println(">>> 모델에 담기 직전 리스트 사이즈: " + progressList.size());
-        for (StudyProgress p : progressList) {
-            System.out.println(">>> 회사 이름: " + p.getJobPost().getCompanyName());
-        }
-
-        System.out.println(">>> 조회된 progressList 크기: " + progressList.size());
-        progressList.forEach(p -> System.out.println(">>> 상태 확인: " + p.getStatus()));
-        
         long studyingCount = progressList.stream()
                 .filter(p -> p.getStatus() == ProgressStatus.STUDYING)
                 .count();
@@ -257,10 +257,17 @@ public class ArticleController {
 
     // 2. 실제 데이터 업데이트 (POST)
     @PostMapping("/ArticleUpdate")
-    public String updateArticle(@RequestParam("articleId") Long articleId,
+    public String updateArticle(@Valid @RequestParam("articleId") Long articleId,
                                 @ModelAttribute ArticleDto articleDto,
-                                @RequestParam(value = "tagNames", required = false) String tagNames) {
-        articleService.updateArticle(articleId, articleDto, tagNames);
+                                @RequestParam(value = "tagNames", required = false) String tagNames,
+                                BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
+
+    articleService.updateArticle(articleId, articleDto, tagNames);
         return "redirect:/article/ArticleDetail/" + articleId;
     }
 
@@ -324,5 +331,11 @@ public class ArticleController {
         model.addAttribute("articles", articlePage.getContent());
         return "article/ArticlePublicList"; // 뷰 파일 경로
     }
-        
+
+    private String alert(Model model, String message, String redirectUrl) {
+        model.addAttribute("message", message);
+        model.addAttribute("redirectUrl", redirectUrl);
+        return "common/alert";
+    }
+
 }

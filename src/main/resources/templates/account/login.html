@@ -17,6 +17,11 @@
             <h2 class="card-title fw-bold text-center mb-4">로그인</h2>
             
             <form th:action="@{/account/login}" method="post">
+
+                <div th:if="${param.error}" class="alert alert-danger" role="alert">
+                    <p th:text="${param.exception}"></p>
+                </div>
+                
                 <div class="mb-3">
                     <label class="form-label fw-bold">아이디</label>
                     <input type="text" name="username" class="form-control" placeholder="아이디를 입력하세요" required>

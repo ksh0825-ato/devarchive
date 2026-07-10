@@ -7,6 +7,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ import com.devarchive.devarchive.repository.AccountRepository;
 import com.devarchive.devarchive.service.InterestJobService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @Controller
@@ -59,8 +61,14 @@ public class InterestJobController {
     // 찜 처리 용
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/interest/{jobId}")
-    public String toggleInterest(@PathVariable Long jobId, 
-                                 @AuthenticationPrincipal UserDetails userDetails) {
+    public String toggleInterest(@Valid @PathVariable Long jobId, 
+                                 @AuthenticationPrincipal UserDetails userDetails,
+                                 BindingResult bindingResult, Model model) {
+
+        if (bindingResult.hasErrors()) {
+            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
+            return alert(model, msg, "back");
+        }
 
         // 1. 로그인 확인 (이전과 동일)
         Account account = accountRepository.findByUsername(userDetails.getUsername())
@@ -72,4 +80,11 @@ public class InterestJobController {
         // 3. 페이지 새로고침 (상세 페이지로 리다이렉트)
         return "redirect:/job/JobPostDetail?jobId=" + jobId;
     }
+
+    private String alert(Model model, String message, String redirectUrl) {
+        model.addAttribute("message", message);
+        model.addAttribute("redirectUrl", redirectUrl);
+        return "common/alert";
+    }
+    
 }
