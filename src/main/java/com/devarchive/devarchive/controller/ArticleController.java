@@ -260,8 +260,9 @@ public class ArticleController {
     @PostMapping("/ArticleUpdate")
     public String updateArticle(@Valid @RequestParam("articleId") Long articleId,
                                 @ModelAttribute ArticleDto articleDto,
+                                BindingResult bindingResult,
                                 @RequestParam(value = "tagNames", required = false) String tagNames,
-                                BindingResult bindingResult, Model model) {
+                                Model model) {
         // 0. 에러 처리
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();

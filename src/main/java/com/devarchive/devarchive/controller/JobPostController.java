@@ -112,8 +112,8 @@ public class JobPostController {
     // 2-2. 공고 등록 처리(post)
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostRegister")
-    public String jobPostRegister(@ModelAttribute JobPostDto jobPostDto, Model model,
-                                  BindingResult bindingResult, Principal principal, Pageable pageable) {
+    public String jobPostRegister(@Valid @ModelAttribute JobPostDto jobPostDto, BindingResult bindingResult,
+                                  Model model, Principal principal, Pageable pageable) {
         
         // 0-1. 예외 처리
         if (bindingResult.hasErrors()) {
@@ -206,8 +206,8 @@ public class JobPostController {
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostUpdate")
     public String update(@Valid @RequestParam("jobId") Long jobId, JobPostDto jobPostDto,
-                         JobPostForm form, JobPost job,
-                         BindingResult bindingResult, Model model) {
+                         BindingResult bindingResult,
+                         JobPostForm form, JobPost job, Model model) {
 
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();

@@ -5,10 +5,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.validator.constraints.URL;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -39,14 +42,15 @@ public class JobPostDto {
     private String description; // 설명
 
     @NotBlank(message = "홈페이지 URL을 입력해주세요.")
+    @URL(message = "올바른 URL 형식(http:// 또는 https:// 포함)을 입력해주세요.")
     private String url; // 링크
     
-    @jakarta.validation.constraints.NotNull(message = "마감일을 선택해주세요.") // null 방지
+    @NotNull(message = "마감일을 선택해주세요.") // null 방지
     @FutureOrPresent(message = "마감일은 오늘 이후로 설정해주세요.") // 과거 날짜 방지
     @DateTimeFormat(pattern = "yyyy-MM-dd") // 이 부분을 추가하세요
     private LocalDate deadline; // 마감일
 
-    @NotBlank(message = "사용 스킬을 입력해주세요.")
+    @NotEmpty(message = "최소 한 개의 기술 스택을 선택해주세요.")
     private List<Long> skills;
 
     @CreationTimestamp
