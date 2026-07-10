@@ -4,28 +4,28 @@
 
 <ul class="list-group list-group-flush" th:fragment="articleList(articles, emptyMsg)">
     <li th:each="article : ${articles}" class="list-group-item px-0">
-        <div> 
+        <div class="mt-1"> 
             <a th:href="@{/article/ArticleDetail/{id}(id=${article.articleId})}" 
-               class="text-decoration-none text-dark fw-bold">
-                <span th:text="${article.title}">제목</span>
-                <span th:if="${article.jobPost != null}" th:text="'| ' + ${article.jobPost.companyName}">| 채용 공고명</span>
+               class="text-decoration-none text-dark d-flex align-items-center">
+                <span th:text="${article.title}" class="fw-bold">제목</span>
+                <span th:if="${article.jobPost != null}" th:text="' | ' + ${article.jobPost.companyName}" class="ms-2"> | 채용 공고명</span>
             </a>
         </div>
         
         <div class="small mt-1">
-            <span class="text-muted" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}">2026-07-05</span>
-
-            <span th:if="${article.account != null}" th:text="' | ' + ${article.account.nickname}">닉네임</span>
-            
+            <span class="text-muted" th:text="${#temporals.format(article.createdAt, 'yyyy-MM-dd')}"></span>
+            <span th:if="${article.account != null}" th:text="' | ' + ${article.account.nickname}"></span>
             <a th:each="articleTag : ${article.articleTags}" 
                th:href="@{/article/ArticleSearchByTag(tagName=${articleTag.tag.tagName})}" 
                class="text-primary text-decoration-underline ms-2">
-                <span th:text="'#' + ${articleTag.tag.tagName}">#태그명</span>
+                <span th:text="'#' + ${articleTag.tag.tagName}"></span>
             </a>
         </div>
     </li>
-    <li th:if="${#lists.isEmpty(articles)}" class="list-group-item text-center text-muted">
-        기록이 없습니다.
+
+    <li th:if="${#lists.isEmpty(articles)}" class="list-group-item text-center text-muted py-4">
+        <p th:text="${emptyMsg ?: '기록이 없습니다.'}"></p>
+        <a th:if="${!isCompany}" th:href="@{/article/ArticleRegister}" class="btn btn-sm btn-outline-primary">첫 글 작성하기</a>
     </li>
 </ul>
 

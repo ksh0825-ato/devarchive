@@ -26,16 +26,14 @@ public class ArticleDto {
     private LocalDateTime updatedAt; // 수정일
 
     @NotNull(message = "공개 여부를 선택해주세요.") // 빈 문자열이나 null 방지
-    private Visibility visibility;
+    private Visibility visibility = Visibility.PRIVATE;
 
     // 1. 인자가 필요한 경우 사용하는 메서드
     public Article toEntity(String username, Long jobId) {
         Article article = new Article();
         article.setTitle(this.title);
         article.setContent(this.content);
-        
-        // 여기에 username이나 jobId를 엔티티에 세팅하는 로직을 추가하세요.
-        // 예: article.setAccount(account); 등
+        article.setVisibility(this.visibility);
         
         return article;
     }

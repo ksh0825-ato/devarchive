@@ -31,7 +31,7 @@
                             
                             <div class="d-flex align-items-center" style="flex: 1;">
                                 <span class="fw-bold text-truncate" th:if="${progress.jobPost != null}" th:text="${progress.jobPost.jobPostTitle}">공고명</span>
-                                <span class="fw-bold text-muted mx-2" th:if="${progress.jobPost != null}" th:text="'| ' + ${progress.jobPost.companyName}">| 회사명</span>
+                                <span class="fw-bold text-muted mx-2" th:if="${progress.jobPost != null}" th:text="' | ' + ${progress.jobPost.companyName}">| 회사명</span>
                                 <span class="fw-bold" th:unless="${progress.jobPost != null}">종료된 공고</span>
                             </div>
 

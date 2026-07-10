@@ -61,14 +61,9 @@ public class InterestJobController {
     // 찜 처리 용
     @PreAuthorize("hasRole('ROLE_USER')")
     @PostMapping("/interest/{jobId}")
-    public String toggleInterest(@Valid @PathVariable Long jobId, 
+    public String toggleInterest(@PathVariable Long jobId, 
                                  @AuthenticationPrincipal UserDetails userDetails,
-                                 BindingResult bindingResult, Model model) {
-
-        if (bindingResult.hasErrors()) {
-            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
-            return alert(model, msg, "back");
-        }
+                                 Model model) {
 
         // 1. 로그인 확인 (이전과 동일)
         Account account = accountRepository.findByUsername(userDetails.getUsername())
@@ -80,11 +75,4 @@ public class InterestJobController {
         // 3. 페이지 새로고침 (상세 페이지로 리다이렉트)
         return "redirect:/job/JobPostDetail?jobId=" + jobId;
     }
-
-    private String alert(Model model, String message, String redirectUrl) {
-        model.addAttribute("message", message);
-        model.addAttribute("redirectUrl", redirectUrl);
-        return "common/alert";
-    }
-    
 }

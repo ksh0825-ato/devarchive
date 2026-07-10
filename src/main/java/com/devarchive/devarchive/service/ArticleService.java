@@ -151,10 +151,6 @@ public class ArticleService {
         Article article = articleRepository.findById(articleId)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
 
-        // 로그 추가
-        System.out.println(">>> [DEBUG] 세션 사용자(username): " + username);
-        System.out.println(">>> [DEBUG] 게시글 작성자(username): " + article.getAccount().getUsername());
-
         if (!article.getAccount().getUsername().equals(username)) {
             throw new IllegalStateException("삭제 권한이 없습니다.");
         }
