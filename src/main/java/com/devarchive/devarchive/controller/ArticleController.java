@@ -103,12 +103,6 @@ public class ArticleController {
     public String myArticleList(Principal principal, Model model, 
                                 @PageableDefault(size = 10) Pageable pageable) {
 
-        // 1. 유저의 전체 글 개수 확인
-        long totalCount = articleRepository.countByAccount_Username(principal.getName());
-
-        // 2. 공고가 연결된 글 개수 확인
-        long jobLinkedCount = articleRepository.countUniqueJobPostsByUsername(principal.getName());
-
         // 0. 로그인 체크
         if (principal == null) return "redirect:/login";
         String username = principal.getName();
@@ -118,6 +112,7 @@ public class ArticleController {
         
         // 2. 통계 데이터 조회
         List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
+        long jobLinkedCount = articleRepository.countUniqueJobPostsByUsername(username);
         long jobCount = articleService.getUniqueJobCount(username);
         long articleCount = articleService.getArticleCount(username);
         long studyingCount = progressList.stream()
@@ -130,6 +125,7 @@ public class ArticleController {
         model.addAttribute("jobCount", jobCount);
         model.addAttribute("articleCount", articleCount);
         model.addAttribute("studyingCount", studyingCount);
+        model.addAttribute("jobLinkedCount", jobLinkedCount);
         model.addAttribute("totalArticles", articlePage.getTotalElements()); 
         model.addAttribute("progressList", progressList);
         model.addAttribute("isSearchMode", false);
@@ -299,7 +295,8 @@ public class ArticleController {
         List<Article> articles = articleService.getArticlesByTag(tagName);
         // Page 객체 생성 시 정확한 전체 사이즈를 넘겨줌
         Page<Article> articlePage = new PageImpl<>(articles, PageRequest.of(0, 10), (long) articles.size());
-        System.out.println("검색된 글 개수: " + (articles != null ? articles.size() : "null"));
+
+        long jobLinkedCount = articleRepository.countUniqueJobPostsByUsername(username);
 
         // 1. 통계 데이터 추가 (서비스에 아래 메서드들이 구현되어 있어야 함)
         List<StudyProgress> progressList = studyProgressService.getProgressByUsername(username);
@@ -312,6 +309,7 @@ public class ArticleController {
         model.addAttribute("tagName", tagName);
         model.addAttribute("isSearchMode", true); // 검색 결과 모드임을 알리는 플래그 
         model.addAttribute("progressList", progressList);
+        model.addAttribute("jobLinkedCount", jobLinkedCount);
         model.addAttribute("totalArticles", (long) articles.size()); // 리스트 사이즈를 명확히 할당
         model.addAttribute("studyingCount", studyingCount);
 
@@ -323,7 +321,7 @@ public class ArticleController {
     public String publicArticleList(Model model, @PageableDefault(size = 10) Pageable pageable) {
         // 공개된 글만 가져옴 (Article.Visibility.PUBLIC)
         List<Article> publicArticles = articleRepository.findByVisibilityOrderByCreatedAtDesc(Visibility.PUBLIC);
-        
+
         Page<Article> articlePage = articleService.findAllPublicArticles(pageable); // Page 타입으로 조회 필수
 
         model.addAttribute("articlePage", articlePage);

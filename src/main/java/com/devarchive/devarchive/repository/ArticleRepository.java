@@ -50,9 +50,10 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     @Query("SELECT COUNT(DISTINCT a.jobPost) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
     long countDistinctJobByAccount_Username(@Param("username") String username);
 
+    // 유저가 작성한 게시글 중, jobPost가 존재하는 것들에 대해 jobPost.id를 중복 제거(DISTINCT)하여 카운트
     @Query("SELECT COUNT(DISTINCT a.jobPost.jobId) FROM Article a WHERE a.account.username = :username AND a.jobPost IS NOT NULL")
     long countUniqueJobPostsByUsername(@Param("username") String username);
-
+    
     @Query("SELECT COUNT(a) FROM Article a WHERE a.account.username = :username")
     long countAllArticlesByUsername(@Param("username") String username);
 

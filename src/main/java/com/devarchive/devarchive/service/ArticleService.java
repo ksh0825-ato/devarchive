@@ -220,7 +220,7 @@ public class ArticleService {
     }
 
     public long countStudyingProgress(String username) {
-    return studyProgressRepository.countByAccountUsernameAndStatus(username, ProgressStatus.STUDYING);
+        return studyProgressRepository.countByAccountUsernameAndStatus(username, ProgressStatus.STUDYING);
     }
 
     @Transactional(readOnly = true)
