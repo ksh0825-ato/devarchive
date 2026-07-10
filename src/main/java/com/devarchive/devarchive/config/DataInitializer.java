@@ -74,6 +74,7 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         Account user1 = accountRepository.findByUsername("user1").get();
+        Account company1 = accountRepository.findByUsername("company1").get();
 
         // 2. 기술 스택(Skill) 생성
         if (skillRepository.count() == 0) {
@@ -95,20 +96,20 @@ public class DataInitializer implements CommandLineRunner {
             // [D-Day 테스트 케이스 생성]
             // 1. 여유 있는 공고 (오늘 이후)
             jobPostRepository.save(JobPost.builder()
-                    .account(user1).jobPostTitle("백엔드 개발자 채용(여유)").companyName("삼성전자")
+                    .account(company1).jobPostTitle("백엔드 개발자 채용(여유)").companyName("삼성전자")
                     .url("https://www.samsung.com")
                     .position("백엔드").description("대규모 트래픽 처리 서버 개발")
                     .deadline(LocalDate.now().plusMonths(1)).skills(skills).createdAt(LocalDateTime.now()).build());
 
             // 2. 오늘 마감 (D-Day)
             jobPostRepository.save(JobPost.builder()
-                    .account(user1).jobPostTitle("데이터 엔지니어 채용(오늘 마감 공고)").companyName("카카오")
+                    .account(company1).jobPostTitle("데이터 엔지니어 채용(오늘 마감 공고)").companyName("카카오")
                     .url("https://www.kakaocorp.com")
                     .position("데이터 엔지니어").deadline(LocalDate.now()).skills(skills).createdAt(LocalDateTime.now()).build());
 
             // 3. 마감된 공고
             jobPostRepository.save(JobPost.builder()
-                    .account(user1).jobPostTitle("프론트엔드 채용(마감된 공고)").companyName("네이버")
+                    .account(company1).jobPostTitle("프론트엔드 채용(마감된 공고)").companyName("네이버")
                     .url("https://www.naver.com")
                     .position("백엔드").deadline(LocalDate.now().minusDays(5)).skills(skills).createdAt(LocalDateTime.now()).build());
 

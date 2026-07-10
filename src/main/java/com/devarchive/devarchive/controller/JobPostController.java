@@ -119,8 +119,14 @@ public class JobPostController {
             return alert(model, msg, "back");
         }
 
+        // 날짜 비교 로직
+        if (jobPostDto.getDeadline() != null && jobPostDto.getDeadline().isBefore(LocalDate.now())) {
+            return alert(model, "마감일은 오늘 이후로 설정해야 합니다.", "back");
+        }
+
         Page<JobPost> jobPosts = jobPostService.getJobPostList(pageable);
         
+
         model.addAttribute("today", LocalDate.now());
         model.addAttribute("job", jobPosts);
         
@@ -177,19 +183,8 @@ public class JobPostController {
 
     // 채용 공고 수정 페이지 이동
     @GetMapping("/JobPostUpdate")
-    public String updateForm(@Valid @RequestParam Long jobId, Principal principal,
-                             BindingResult bindingResult, HttpServletRequest request, Model model) {
-        
-        // 에러
-        if (bindingResult.hasErrors()) {
-            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
-            
-            // common/alert.html로 데이터 전달
-            model.addAttribute("message", msg);
-            model.addAttribute("redirectUrl", "back"); // 뒤로가기
-            
-            return "common/alert";
-        }
+    public String updateForm(@RequestParam Long jobId, Principal principal,
+                            HttpServletRequest request, Model model) {
 
         JobPost job = jobPostService.findById(jobId);
         
@@ -217,12 +212,18 @@ public class JobPostController {
     // 실제 수정 처리
     @PreAuthorize("hasRole('COMPANY')")
     @PostMapping("/JobPostUpdate")
-    public String update(@Valid @RequestParam("jobId") Long jobId, JobPostForm form, JobPost job,
+    public String update(@Valid @RequestParam("jobId") Long jobId, JobPostDto jobPostDto,
+                         JobPostForm form, JobPost job,
                          BindingResult bindingResult, Model model) {
 
         if (bindingResult.hasErrors()) {
             String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
             return alert(model, msg, "back");
+        }
+
+        // 날짜 비교 로직
+        if (jobPostDto.getDeadline() != null && jobPostDto.getDeadline().isBefore(LocalDate.now())) {
+            return alert(model, "마감일은 오늘 이후로 설정해야 합니다.", "back");
         }
 
         // DTO 없이 바로 Form만 서비스로 넘겨 처리합니다.
@@ -230,18 +231,23 @@ public class JobPostController {
             return "redirect:/job/JobPostDetail?jobId=" + jobId;
     }
 
+    
+    // 실수로 GET으로 접근할 경우를 대비한 방어 코드
+    @GetMapping("/JobPostDelete")
+    public String deleteGet() {
+        return "redirect:/job/JobPostList"; // 목록 페이지로 리다이렉트
+    }
 
     // 채용 공고 삭제 처리
-    @PostMapping("/job/JobPostDelete")
-    public String delete(@Valid @RequestParam("jobId") Long jobId, Principal principal, HttpServletRequest request,
-                         BindingResult bindingResult, Model model) {
+    @PostMapping("/JobPostDelete")
+    public String delete(@RequestParam("jobId") Long jobId, Principal principal) {
     
-        if (bindingResult.hasErrors()) {
-            String msg = bindingResult.getAllErrors().get(0).getDefaultMessage();
-            return alert(model, msg, "back");
-        }
-
+        // 1. 필요한 경우: 삭제 권한 확인 (본인의 공고인지 체크하는 로직)
+        // jobPostService.checkAuthority(jobId, principal.getName()); 
+        
+        // 2. 서비스 로직 수행
         jobPostService.deleteJobPost(jobId);
+
         return "redirect:/job/JobPostList";
     }
 

@@ -20,7 +20,8 @@
                 <div class="d-flex align-items-center">
                     <div class="me-3 text-end">
                         <h6 class="mb-0">
-                            <span th:text="${account.nickname}">닉네임</span>님 환영합니다!
+                            <span th:if="${account != null}" th:text="${account.nickname}">닉네임</span>님 환영합니다!
+                            <span th:if="${account == null}">로그인 필요</span>
                         </h6>
                         <div class="text-muted" style="font-size: 0.8rem;">
                             <small>ID: <span th:text="${account.username}">아이디</span></small> 

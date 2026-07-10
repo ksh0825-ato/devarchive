@@ -81,14 +81,16 @@
                 </div>
 
                 <div class="mt-4 border-top pt-3">
-                    <div class="d-flex justify-content-end">
-                        <a th:if="${isCompany}"
-                        th:href="@{/job/JobPostUpdate(jobId=${job.jobId})}" 
+                    <div th:if="${isCompany && job.account.userId == account.userId}" class="d-flex justify-content-end mb-2">
+                        
+                        <a th:href="@{/job/JobPostUpdate(jobId=${job.jobId})}" 
                         class="btn btn-outline-secondary btn-sm me-2">수정</a>
-                        <a th:if="${isCompany}" 
-                        th:href="@{/job/JobPostDelete(jobId=${job.jobId})}" 
-                        class="btn btn-sm btn-outline-danger"
-                        onclick="return confirm('정말 삭제하시겠습니까?');">삭제</a>
+                        
+                        <form th:action="@{/job/JobPostDelete}" method="post" style="display:inline;">
+                            <input type="hidden" name="jobId" th:value="${job.jobId}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                    onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                        </form>
                     </div>
 
                     <div class="mt-3 d-flex justify-content-end">
